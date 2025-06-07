@@ -49,17 +49,17 @@ td > div.extracts {
 #chat {
   height: 80%;
 }
-#stdinUI {
+.stdinUI {
   width: 100%;
   height: 18%;
   display: flex;
   flex-direction: row;
 }
-#stdin {
+.stdin {
   width: 95%;
   height: 100%;
 }
-#send {
+.send {
   width: 5%;
   height: 100%;
 }

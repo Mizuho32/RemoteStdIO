@@ -21,6 +21,7 @@ function ChatList(props: ChatListProps) {
   const [stdin_enabled, setStdinEnabled] = useState(false)
 
   let chat = props.appState.chats[props.client.client_id]
+  let client_id = props.client.client_id
 
   useEffect(()=>{
     const chat = props.appState.chats[props.client.client_id]
@@ -80,9 +81,9 @@ function ChatList(props: ChatListProps) {
             ))}
           </tbody>
         </table>
-        <div id="stdinUI">
-          <textarea id="stdin" disabled={!stdin_enabled}></textarea>
-          <button type="button" className="msglist control" onMouseUp={()=>{}} id="send" disabled={!stdin_enabled} onClick={_=>module.onButtonClick(props.client.client_id)}>Run</button>
+        <div id={`stdinUI_${client_id}`} className='stdinUI'>
+          <textarea id={`stdin_${client_id}`} disabled={!stdin_enabled} className='stdin'></textarea>
+          <button type="button" id={`send_${client_id}`} className="send" onMouseUp={()=>{}} disabled={!stdin_enabled} onClick={_=>module.onButtonClick(client_id)}>Run</button>
         </div>
       </div>
       </>

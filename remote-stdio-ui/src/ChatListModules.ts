@@ -5,7 +5,7 @@ export default axios
 import type { AppState, Chat, Message, Stdin } from "./interfaces";
 
 export async function onButtonClick(client_id: string) {
-    const textarea = document.querySelector<HTMLTextAreaElement>('#stdin')
+    const textarea = document.querySelector<HTMLTextAreaElement>(`#stdin_${client_id}`)
     const textBody = textarea?.value
     if (textBody) {
         const json: Stdin = {status: 'input', client_id: client_id, message: textBody}
