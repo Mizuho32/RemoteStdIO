@@ -65,6 +65,8 @@ DEFINE_ONCE=true
 class App < Sinatra::Base
   extend T::Sig
 
+  # https://hawksnowlog.blogspot.com/2024/11/sinatra-410-must-be-set-permitted-hosts.html?m=1
+  set :host_authorization, { permitted_hosts: [] }
   configure :development do
     #register Sinatra::Reloader
 
