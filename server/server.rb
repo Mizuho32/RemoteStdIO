@@ -17,7 +17,13 @@ parser.on('-b', "--bind [0.0.0.0]", "bind") {|v| option.bind = v }
 parser.on("--mongo-host [localhost]", "mongo host") {|v| option.mongo_host = v}
 parser.on("--mongo-port [27017]", "mongo port") {|v| option.mongo_port = v.to_i }
 parser.on("--client [nil]", "client optration. ex. '+user'") {|v| option.client = v }
-# parser.on('-n', "--n-worker [8", "num workers") {|v| option.n_worker = v.to_i }
+parser.on('-n', "--notify-config [notify_conf.yaml]", "config of notification (e.g. gotify)") {|v|
+  require 'yaml'
+  yaml = YAML.load_file(v)
+  T.must(yaml[:domain])
+  T.must(yaml[:token])
+  option.notify = Notify.new(yaml[:domain], yaml[:token])
+}
 
 parser.parse!(ARGV)
 

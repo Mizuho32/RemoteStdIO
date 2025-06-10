@@ -38,12 +38,22 @@ class << self
     super(**args)
   end
 
-  sig { params(message: String, client_id: String).void }
-  def handle_stdout(message, client_id)
-    db_elem = Types::Message.new(message: message,datetime: Time.now, client_id: client_id, err: false)
+  sig { params(message: String, client_id: String, err: T::Boolean).void }
+  def handle_stdout(message, client_id, err=false)
+    db_elem = Types::Message.new(message: message,datetime: Time.now, client_id: client_id, err: err)
     result = App.data.mongodb.new_message(db_elem)
     data = {**db_elem.serialize, '_id' => result.inserted_ids.first}
     App.data.ws_fronts.each{ _1.send({type: 'msg', data: data}.to_json) }
+
+    # notify
+    if !App.data.option.notify.nil? then
+      noti_msg = "Remote std got message from #{client_id}\n#{message[..20]}..."
+      priority = 0
+      if %w[? !].any?{ message.include?(_1) } then
+        priority = 4
+      end
+      App.data.option.notify&.notify('remotestd notify', noti_msg, priority)
+    end
   end
 
   def client_control()

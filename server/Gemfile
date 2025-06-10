@@ -15,6 +15,7 @@ gem 'sorbet-runtime'
 gem 'nanoid'
 gem 'mongo'
 gem 'bigdecimal'
+gem 'multipart-post'
 
 group :backends do
   gem 'webrick'

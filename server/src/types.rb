@@ -5,6 +5,7 @@ require 'sorbet-runtime'
 require 'faye/websocket'
 
 require_relative('mongoDB')
+require_relative('notify')
 
 if !defined?(DEFINE_ONCE) and Sinatra::Base.development? then
 module Types
@@ -19,6 +20,7 @@ module Types
     prop :mongo_port, Integer, default: 27017
 
     prop :client, T.nilable(String), default: nil
+    prop :notify, T.nilable(Notify), default: nil
   end
 
   class AppData < T::Struct
