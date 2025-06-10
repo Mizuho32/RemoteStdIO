@@ -3,6 +3,7 @@ import axios from "axios"
 export default axios
 
 import type { AppState, Chat, Message, Stdin } from "./interfaces";
+import * as utils from './utils'
 
 export async function onClientOpen(client_id: string, appState: AppState, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
     const chats = appState.chats
@@ -77,5 +78,13 @@ export function startWebSocket(setAppState: React.Dispatch<React.SetStateAction<
             console.log('WS Error: ', ws_data)
         }
     };
+
+    socket.onclose = function() {
+        (async function(){
+            console.log('WS closed. retry after 30s')
+            await utils.sleep(30 * 1000)
+            startWebSocket(setAppState)
+        })()
+    }
 
 }
