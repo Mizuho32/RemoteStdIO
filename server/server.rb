@@ -16,6 +16,8 @@ parser.on('-p', "--port [8000]", "port") {|v| option.port = v.to_i }
 parser.on('-b', "--bind [0.0.0.0]", "bind") {|v| option.bind = v }
 parser.on("--mongo-host [localhost]", "mongo host") {|v| option.mongo_host = v}
 parser.on("--mongo-port [27017]", "mongo port") {|v| option.mongo_port = v.to_i }
+parser.on('-u', "--user [user name]", "mongo user") {|v| option.user = v}
+parser.on("--pass [user pw]", "mongo user pass") {|v| option.password = v}
 parser.on("--client [nil]", "client optration. ex. '+user'") {|v| option.client = v }
 parser.on('-n', "--notify-config [notify_conf.yaml]", "config of notification (e.g. gotify)") {|v|
   require 'yaml'

@@ -27,7 +27,7 @@ class << self
     end
     # puts "Open #{db_name} db"
 
-    mongo = MongoDB.new(opt.mongo_host, opt.mongo_port, db_name)
+    mongo = MongoDB.new(opt.mongo_host, opt.mongo_port, db_name, opt.user, opt.password)
     @data = Types::AppData.new(mongodb: mongo, option: opt, ws_fronts: [], ws_backs: {})
     @restart = false
     # @mutex = Thread::Mutex.new()
@@ -68,7 +68,17 @@ class << self
       end
 
       status, result = if type == ?+ then
-        App.data.mongodb.client_add(display_name)
+        cid = nil
+        cid = if display_name.include?(?:) then
+          m = display_name.match(/([^:]+):([^:]+)/)
+          if m then
+            display_name = T.must(m[1])
+            m[2]
+          else
+            raise RuntimeError.new("Invalied name #{display_name}")
+          end
+        end
+        App.data.mongodb.client_add(display_name, id: cid)
       elsif type == ?~ then
         client_id = display_name
         App.data.mongodb.client_del(client_id)

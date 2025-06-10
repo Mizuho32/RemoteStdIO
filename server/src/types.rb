@@ -18,6 +18,8 @@ module Types
     prop :backend, String, default: 'puma'
     prop :mongo_host, String, default: 'localhost'
     prop :mongo_port, Integer, default: 27017
+    prop :user, T.nilable(String), default: nil
+    prop :password, T.nilable(String), default: nil
 
     prop :client, T.nilable(String), default: nil
     prop :notify, T.nilable(Notify), default: nil

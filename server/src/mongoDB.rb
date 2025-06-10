@@ -19,9 +19,9 @@ class MongoDB
   # sig {returns{db}}
   # attr_reader :db
 
-  sig {params(host:String, port: Integer, dbname: String).void}
-  def initialize(host, port, dbname)
-    @client = Mongo::Client.new([ "#{host}:#{port}" ], database: dbname)
+  sig {params(host:String, port: Integer, dbname: String, user: T.nilable(String), password: T.nilable(String)).void}
+  def initialize(host, port, dbname, user, password)
+    @client = Mongo::Client.new([ "#{host}:#{port}" ], user: user, password:password, database: dbname, auth_source: 'admin' )
     
     @db = T.let(DBFormat.new(
       InBox: @client[:InBox], 
@@ -44,14 +44,15 @@ class MongoDB
     return found.map{ _1 }
   end
 
-  sig {params(display_name: String).returns([T::Boolean, String])}
-  def client_add(display_name)
+  sig {params(display_name: String, id: T.nilable(String)).returns([T::Boolean, String])}
+  def client_add(display_name, id: nil)
     found = T.let(@db.Clients.find({ display_name: display_name }), Mongo::Collection::View)
     unless found.count_documents.zero? then
       return false, "'#{display_name}' already exists"
     end
 
-    client = Types::Client.new(display_name: display_name, client_id: Nanoid.generate(size: 5))
+    client_id = if id.nil? then Nanoid.generate(size: 5) else id end
+    client = Types::Client.new(display_name: display_name, client_id: client_id)
     @db.Clients.insert_one(client.serialize)
     return true,"'#{display_name}' added"
   end
