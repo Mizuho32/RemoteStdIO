@@ -135,7 +135,7 @@ class App < Sinatra::Base
     send_file File.join(settings.public_folder, 'index.html')
   end
 
-  get '/websocket/front' do
+  get %r'/(api/)?websocket/front' do
     if Faye::WebSocket.websocket?(request.env) then
       ws = Faye::WebSocket.new(request.env)
 
@@ -169,7 +169,7 @@ class App < Sinatra::Base
     end
   end
 
-  get '/websocket/back' do
+  get %r'/(api/)?websocket/back' do
     if Faye::WebSocket.websocket?(request.env) then
       ws = Faye::WebSocket.new(request.env)
       will_close = Thread.new {
