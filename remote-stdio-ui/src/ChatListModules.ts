@@ -2,7 +2,7 @@
 import axios from "axios"
 export default axios
 
-import type { AppState, Chat, Message, Stdin } from "./interfaces";
+import type { /*AppState, Chat, Message,*/ Stdin } from "./interfaces";
 
 export async function onButtonClick(client_id: string) {
     const textarea = document.querySelector<HTMLTextAreaElement>(`#stdin_${client_id}`)

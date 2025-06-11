@@ -1,7 +1,7 @@
 // import { FaPlay } from 'react-icons/fa';
 
 // import React, { useState } from 'react'
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, /*useSyncExternalStore*/ } from 'react';
 import * as module from './ChatListModules'
 import './ChatList.css'
 

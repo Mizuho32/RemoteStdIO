@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+/*
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
+*/
 import './App.css'
 
 import type { AppState, Client } from './interfaces'
-import * as utils from './utils'
+// import * as utils from './utils'
 import axios from 'axios'
 import ClientList from './ClientList'
 import * as AppModules from './AppModules'
