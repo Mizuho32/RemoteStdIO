@@ -5,6 +5,8 @@ require 'optparse'
 
 require_relative('src/types')
 
+DEFINE_ONCE=true if !defined?(DEFINE_ONCE) && Sinatra::Base.development?
+
 option = Types::OPTION.new()
 
 parser = OptionParser.new

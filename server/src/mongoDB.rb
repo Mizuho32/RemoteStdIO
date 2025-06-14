@@ -8,7 +8,7 @@ require_relative('types')
 class MongoDB
   extend T::Sig
 
-  if !defined?(DEFINE_ONCE) and Sinatra::Base.development? then
+  if !defined?(DEFINE_ONCE) then
   class DBFormat < T::Struct
     const :InBox, Mongo::Collection
     const :Archive, Mongo::Collection

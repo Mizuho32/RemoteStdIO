@@ -7,7 +7,7 @@ require 'faye/websocket'
 require_relative('mongoDB')
 require_relative('notify')
 
-if !defined?(DEFINE_ONCE) and Sinatra::Base.development? then
+if !defined?(DEFINE_ONCE) then
 module Types
   extend T::Sig
 

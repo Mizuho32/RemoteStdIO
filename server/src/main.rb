@@ -25,7 +25,7 @@ require_relative 'app'
 #use Rack::Chunked
 #use Rack::ContentLength
 
-if !defined?(DEFINE_ONCE) and Sinatra::Base.development? then
+if !defined?(DEFINE_ONCE) then
 class Sinatra::Base
   class << self
     extend T::Sig
@@ -60,7 +60,6 @@ class Sinatra::Base
   end # meta class definition end
 end
 end
-DEFINE_ONCE=true
 
 class App < Sinatra::Base
   extend T::Sig
