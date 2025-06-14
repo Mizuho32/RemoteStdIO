@@ -219,12 +219,44 @@ class App < Sinatra::Base
     current_port = settings.port
     query_string = request.query_string
     uri = URI.parse("http://localhost:#{current_port}/#{api_name}?#{query_string}")
-    puts "proxy #{api_name} to :#{current_port}"
+    puts "Get proxy #{api_name} to :#{current_port}"
 
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Get.new(uri.request_uri)
 
     response = http.request(request)
+    status response.code
+    body response.body
+  end
+
+  post '/api/:api_name' do
+    api_name = params[:api_name]
+    current_port = settings.port
+    query_string = request.query_string
+    uri = URI.parse("http://localhost:#{current_port}/#{api_name}?#{query_string}")
+    puts "Post proxy #{api_name} to :#{current_port}"
+
+    http = Net::HTTP.new(uri.host, uri.port)
+
+    # POSTリクエストを構築
+    req = Net::HTTP::Post.new(uri.request_uri)
+
+    # ヘッダー転送（必要に応じて制限を加える）
+    request.env.each do |key, value|
+      if key.start_with?('HTTP_')
+        header_name = key.sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
+        req[header_name] = value unless header_name == 'Host'
+      end
+    end
+
+    # Content-Type など明示的にセット
+    req['Content-Type'] = request.content_type if request.content_type
+
+    # リクエストボディを渡す
+    req.body = request.body.read
+
+    # レスポンスを転送
+    response = http.request(req)
     status response.code
     body response.body
   end
