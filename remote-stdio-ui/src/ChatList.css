@@ -54,7 +54,12 @@ td > div.extracts {
   height: 80%;
 }
 div.msgs {
+  border: 2px solid cyan;
+}
+div.msg {
   border: 1px solid blue;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 .stdinUI {
   width: 100%;

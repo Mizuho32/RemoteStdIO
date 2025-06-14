@@ -74,7 +74,7 @@ function ChatList(props: ChatListProps) {
                   <tr key={index}>
                     <td>
                       <div className='msgs'>
-                        <div>{msg.message}</div>
+                        <div className='msg'>{msg.message}</div>
                         <div>{msg.datetime.toISOString()}</div>
                       </div>
                     </td>
