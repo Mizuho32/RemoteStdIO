@@ -36,12 +36,12 @@ class MongoDB
 
   sig { params(client_id: String, _id: T.nilable(String), max_count: Integer).returns(T::Array[Types::Message])}
   def get_messages(client_id, _id, max_count = 10)
-    found = if _id.nil? then
-      T.let(@db.InBox.find(client_id: client_id), Mongo::Collection::View).sort(datetime: 1).limit(max_count)
+    found = if _id.nil? then # latest
+      T.let(@db.InBox.find(client_id: client_id), Mongo::Collection::View).sort(datetime: -1).limit(max_count)
     else
       raise NotImplementedError.new()
     end
-    return found.map{ _1 }
+    return found.map{ _1 }.reverse
   end
 
   sig {params(display_name: String, id: T.nilable(String)).returns([T::Boolean, String])}
