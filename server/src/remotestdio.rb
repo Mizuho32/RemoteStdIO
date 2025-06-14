@@ -192,7 +192,7 @@ end
 
 if __FILE__ == $0
   RemoteSTDIO.init(T.must(ENV['HOST']), T.must(ENV['CID']))
-  puts("Hello world! #{Time.now.iso8601}", __FILE__)
+  puts("Hello world!\n  At #{Time.now.iso8601}")
   print("Input >>")
   val = gets()
   p(val)
