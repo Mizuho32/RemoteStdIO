@@ -47,6 +47,10 @@ td > div.extracts {
 }
 
 #chat {
+  height: 100%;
+}
+.msgsUI {
+  overflow-y: scroll;
   height: 80%;
 }
 .stdinUI {

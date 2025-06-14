@@ -62,25 +62,27 @@ function ChatList(props: ChatListProps) {
       </div>
       */}
       <div id="chatContainer" style={{display: props.style}}>
-        <table className="tablecss" id="chat">
-          <thead>
-            <tr>
-              <th className="no">Chat {props.client.display_name}</th>
-            </tr>
-          </thead>
-          <tbody id="msgs">
-            {Object.entries(msg_list).map(([_, msg], index) =>(
-              <tr key={index}>
-                <td>
-                  <div className='msgs'>
-                    <div>{msg.message}</div>
-                    <div>{msg.datetime.toISOString()}</div>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <div className='msgsUI'>
+            <table className="tablecss" id="chat">
+              <thead>
+                <tr>
+                  <th className="no">Chat {props.client.display_name}</th>
+                </tr>
+              </thead>
+              <tbody id="msgs">
+                {Object.entries(msg_list).map(([_, msg], index) => (
+                  <tr key={index}>
+                    <td>
+                      <div className='msgs'>
+                        <div>{msg.message}</div>
+                        <div>{msg.datetime.toISOString()}</div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        </div>
         <div id={`stdinUI_${client_id}`} className='stdinUI'>
           <textarea id={`stdin_${client_id}`} disabled={!stdin_enabled} className='stdin'></textarea>
           <button type="button" id={`send_${client_id}`} className="send" onMouseUp={()=>{}} disabled={!stdin_enabled} onClick={_=>module.onButtonClick(client_id)}>Run</button>
