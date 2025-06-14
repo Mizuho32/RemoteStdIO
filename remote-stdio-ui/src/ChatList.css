@@ -53,6 +53,9 @@ td > div.extracts {
   overflow-y: scroll;
   height: 80%;
 }
+div.msgs {
+  border: 1px solid blue;
+}
 .stdinUI {
   width: 100%;
   height: 18%;
