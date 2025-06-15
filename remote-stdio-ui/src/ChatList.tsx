@@ -1,7 +1,7 @@
-// import { FaPlay } from 'react-icons/fa';
+import { IoSendSharp, IoClose } from "react-icons/io5";
 
 // import React, { useState } from 'react'
-import { useEffect, useState, /*useSyncExternalStore*/ } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, /*useSyncExternalStore*/ } from 'react';
 import * as module from './ChatListModules'
 import './ChatList.css'
 
@@ -13,15 +13,21 @@ interface ChatListProps {
   appState: AppState
   style: string
   client: Client
+  /*scrollBottomRef: React.RefObject<HTMLDivElement | null>*/
   isMobile?: boolean;
 }
 
 function ChatList(props: ChatListProps) {
   const [msg_list, setMsgList] = useState<Message[]>([])
   const [stdin_enabled, setStdinEnabled] = useState(false)
+  const scrollBottomRef = useRef<HTMLDivElement>(null);
 
   let chat = props.appState.chats[props.client.client_id]
   let client_id = props.client.client_id
+
+  function scroll() {
+    scrollBottomRef?.current?.scrollIntoView({behavior: 'smooth'});
+  }
 
   useEffect(()=>{
     const chat = props.appState.chats[props.client.client_id]
@@ -38,6 +44,15 @@ function ChatList(props: ChatListProps) {
     if (chat?.stdin_enabled !== undefined)
       setStdinEnabled(chat?.stdin_enabled)
   }, [chat?.stdin_enabled])
+
+  useLayoutEffect(() => {
+    scroll()
+  }, []);
+  useLayoutEffect(() => {
+  scroll()
+  }, [msg_list]);
+
+
 
   if (props.isMobile) {
     return (
@@ -64,7 +79,7 @@ function ChatList(props: ChatListProps) {
       <div id="chatContainer" style={{display: props.style}}>
           <div className='msgsUI'>
             <table className="tablecss" id="chat">
-              <thead>
+              <thead onClick={()=>scroll()}>
                 <tr>
                   <th className="no">Chat {props.client.display_name}</th>
                 </tr>
@@ -82,10 +97,15 @@ function ChatList(props: ChatListProps) {
                 ))}
               </tbody>
             </table>
+            {/* 一番下までスクロールするためのdiv↓ */}
+            <div ref={/*props.*/scrollBottomRef}/>
         </div>
         <div id={`stdinUI_${client_id}`} className='stdinUI'>
           <textarea id={`stdin_${client_id}`} disabled={!stdin_enabled} className='stdin'></textarea>
-          <button type="button" id={`send_${client_id}`} className="send" onMouseUp={()=>{}} disabled={!stdin_enabled} onClick={_=>module.onButtonClick(client_id)}>Run</button>
+          <div className="send" >
+            <button type="button" id={`send_${client_id}`} disabled={!stdin_enabled} onClick={_=>module.onButtonClick(client_id)}><IoSendSharp /></button>
+            <button type="button" id={`cancel_${client_id}`} ><IoClose /></button>
+          </div>
         </div>
       </div>
       </>

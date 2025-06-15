@@ -17,7 +17,7 @@ button.extractlist.control {
   display: flex;
   flex-direction: column;
   justify-content: stretch;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   height: 100%;
   width: 100%;
   background-color:cadetblue;
@@ -50,6 +50,7 @@ td > div.extracts {
   height: 100%;
 }
 .msgsUI {
+  overflow-x: scroll;
   overflow-y: scroll;
   height: 80%;
 }
@@ -66,12 +67,20 @@ div.msg {
   height: 18%;
   display: flex;
   flex-direction: row;
+  justify-content: stretch;
 }
 .stdin {
-  width: 95%;
+  /* width: 90%; */
   height: 100%;
+  flex-grow:1
 }
 .send {
-  width: 5%;
+  /* width: 10%; */
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.send > button {
+  font-size: 1.5em;
 }
