@@ -126,13 +126,15 @@ class RemoteSTDIO
       wsin = WSIN.new(@host, @client_id)
       @retval = T.let(nil, T.nilable(String))
       threads[0] = WhineThread.new{
-        retval = STDIN.gets(*T.unsafe(a))
-        wsin.got_msg = true
-        counter = threads[1]
-        @mutex.synchronize do
-          @retval = retval
-          if counter&.status then
-            counter.kill
+        retval = T.let(STDIN.gets(*T.unsafe(a)), T.nilable(String))
+        if !retval.nil? then # if nil, close STDIN thread and wait wsin
+          wsin.got_msg = true
+          counter = threads[1]
+          @mutex.synchronize do
+            @retval = retval
+            if counter&.status then
+              counter.kill
+            end
           end
         end
       }
