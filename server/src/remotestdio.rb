@@ -168,6 +168,32 @@ module Kernel
   }
 end
 
+module RemoteSTDIOUtils
+  include Kernel
+  extend self
+  attr_accessor :no_remotestdio
+  @no_remotestdio = false
+
+  def init_by_envvar()
+    host = ENV['HOST'].to_s
+    client_id = ENV['CID'].to_s
+    if !host.empty? && !client_id.empty? then
+      RemoteSTDIO.init(host, client_id)
+    else
+      puts "WARN puts without remotestdio"
+    end
+  end
+
+  def safe_gets()
+    if RemoteSTDIOUtils.no_remotestdio then
+      return STDIN.gets
+    else
+      return gets
+    end
+  end
+end
+
+
 # class CIO
 #   def write(msg)
 #     STDOUT.puts("orig: #{msg.inspect}")
