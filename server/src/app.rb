@@ -48,9 +48,11 @@ class << self
     # notify
     if !App.data.option.notify.nil? then
       noti_msg = "Remote std got message from #{client_id}\n#{message[..20]}..."
-      priority = 0
+      priority = App.data.option.priority
       if %w[? !].any?{ message.include?(_1) } then
         priority = 4
+      elsif err then
+        priority = 6
       end
       App.data.option.notify&.notify('remotestd notify', noti_msg, priority)
     end

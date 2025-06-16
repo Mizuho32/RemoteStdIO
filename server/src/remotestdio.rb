@@ -3,6 +3,7 @@
 require 'net/http'
 require 'uri'
 require 'json'
+require 'delegate'
 
 require 'sorbet-runtime'
 require 'faye/websocket'
@@ -90,13 +91,15 @@ class RemoteSTDIO
 
       @client_id = id
       @mutex = Mutex.new
+
+      $stderr = FakeSTDERR.new($stderr)
     end
 
-    sig {params(msg: String).returns(T.untyped)}
-    def write(msg)
+    sig {params(msg: String, err: T::Boolean).returns(T.untyped)}
+    def write(msg, err: false)
       return if @client_id.nil?
 
-      payload = { message: msg, client_id: @client_id }.to_json
+      payload = { message: msg, client_id: @client_id, err: err }.to_json
       request = Net::HTTP::Post.new(@url.path, { 'Content-Type' => 'application/json' })
       request.body = payload
 
@@ -108,14 +111,14 @@ class RemoteSTDIO
       # puts "Response Body: #{response.body}"
     end
 
-    sig {params(a: String, noremote: T::Boolean).void}
-    def puts(*a, noremote: false)
-      self.write(a.join("\n") + "\n") if !noremote
+    sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
+    def puts(*a, err:false, noremote: false)
+      self.write(a.join("\n") + "\n", err: err) if !noremote
     end
 
-    sig {params(a: String, noremote: T::Boolean).void}
-    def print(*a, noremote: false)
-      self.write(a.join) if !noremote
+    sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
+    def print(*a, err:false, noremote: false)
+      self.write(a.join, err: err) if !noremote
     end
 
     sig {params(a: String, noremote: T::Boolean, kw: String).returns(String)}
@@ -152,6 +155,18 @@ class RemoteSTDIO
       return @retval || ''
     end
 
+  end
+end
+
+class FakeSTDERR < SimpleDelegator
+  def puts(*a)
+    STDERR.puts(*T.unsafe(a))
+    RemoteSTDIO.puts(*T.unsafe(a), err: true)
+  end
+
+  def print(*a)
+    STDERR.print(*T.unsafe(a))
+    RemoteSTDIO.print(*T.unsafe(a), err: true)
   end
 end
 
@@ -220,8 +235,8 @@ end
 
 if __FILE__ == $0
   RemoteSTDIO.init(T.must(ENV['HOST']), T.must(ENV['CID']))
-  print("Hello world!\n  At #{Time.now.iso8601}\nInput >>")
+  print("Hello world\n  At #{Time.now.iso8601}\nInput >>")
   val = gets()
-  puts("Got #{val}")
+  $stderr.puts("Got #{val}")
   p(val)
 end

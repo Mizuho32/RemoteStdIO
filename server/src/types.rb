@@ -20,6 +20,7 @@ module Types
     prop :mongo_port, Integer, default: 27017
     prop :user, T.nilable(String), default: nil
     prop :password, T.nilable(String), default: nil
+    prop :priority, Integer, default: if Sinatra::Base.development? then 0 else -1 end
 
     prop :client, T.nilable(String), default: nil
     prop :notify, T.nilable(Notify), default: nil

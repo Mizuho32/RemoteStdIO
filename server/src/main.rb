@@ -100,7 +100,7 @@ class App < Sinatra::Base
     data = JSON.parse(request.body.read, symbolize_names: true)
     puts(data[:client_id], data[:message][0..30]) if App.data.option.debug
 
-    App.handle_stdout(data[:message], data[:client_id])
+    App.handle_stdout(data[:message], data[:client_id], data[:err])
   end
 
   get '/stdout' do
