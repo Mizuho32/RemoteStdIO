@@ -235,7 +235,12 @@ end
 
 if __FILE__ == $0
   RemoteSTDIO.init(T.must(ENV['HOST']), T.must(ENV['CID']))
-  print("Hello world\n  At #{Time.now.iso8601}\nInput >>")
+  print(
+"""## Hello world
+**At #{Time.now.iso8601}**
+~~Test text~~
+Input >>"""
+)
   val = gets()
   $stderr.puts("Got #{val}")
   p(val)
