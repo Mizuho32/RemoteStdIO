@@ -28,6 +28,7 @@ parser.on('-n', "--notify-config [notify_conf.yaml]", "config of notification (e
   T.must(yaml[:token])
   option.notify = Notify.new(yaml[:domain], yaml[:token])
 }
+parser.on("--priority [number]", "Priority -1..10?") {|v| option.priority = v.to_i }
 
 parser.parse!(ARGV)
 
