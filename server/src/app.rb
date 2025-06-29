@@ -54,7 +54,8 @@ class << self
       elsif err then
         priority = 6
       end
-      App.data.option.notify&.notify('remotestd notify', noti_msg, priority)
+
+      App.data.option.notify&.notify('remotestd notify', noti_msg, priority) if priority > 0
     end
   end
 
