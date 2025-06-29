@@ -6,6 +6,7 @@ import * as module from './ChatListModules'
 import './ChatList.css'
 
 import type {AppState, Client, Message} from './interfaces'
+import ReactMarkdown from "react-markdown";
 // import * as songUtils from './songUtils'
 // import { startSession } from './utils';
 
@@ -89,8 +90,8 @@ function ChatList(props: ChatListProps) {
                   <tr key={index}>
                     <td>
                       <div className='msgs'>
-                        <div className='msg'>{msg.message}</div>
-                        <div>{msg.datetime.toISOString()}</div>
+                        <div className='msg'><ReactMarkdown>{msg.message}</ReactMarkdown></div>
+                        <div>{msg.datetime.toLocaleDateString()} {msg.datetime.toLocaleTimeString()}</div>
                       </div>
                     </td>
                   </tr>
