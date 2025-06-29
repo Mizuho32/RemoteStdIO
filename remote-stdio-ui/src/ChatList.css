@@ -59,7 +59,7 @@ div.msgs {
 }
 div.msg {
   border: 1px solid blue;
-  white-space: pre-wrap;
+  /* white-space: pre-wrap; */
   word-wrap: break-word;
 }
 .stdinUI {
