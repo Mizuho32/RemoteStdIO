@@ -144,6 +144,10 @@ class RemoteSTDIO:
         """
         メッセージをJSONペイロードとしてリモートのHTTPサーバーにPOSTします。
         """
+
+        if not msg  or msg == "\n":
+            return
+
         if not cls._is_initialized:
             return
 
