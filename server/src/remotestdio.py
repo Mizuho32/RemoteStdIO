@@ -225,6 +225,10 @@ class RemoteSTDIO:
             
         builtins.input = cls.gets
         sys.stdout = FakeSTDStream(cls._original_stdout, is_err=False)
+        def tmp(*args, sep = ' ', end="\n"):
+            msg = sep.join(map(lambda a: str(a), args)) + end
+            sys.stdout.write(msg)
+        builtins.print = tmp
         sys.stderr = FakeSTDStream(cls._original_stderr, is_err=True)
         
         cls._is_patched = True
@@ -263,7 +267,7 @@ if __name__ == "__main__":
     
     # `input` はローカルとリモートの両方で待機する
     # プロンプトは `gets` メソッド内で処理される
-    val = input("Input >> ")
+    val = input("Input >>")
 
     # `sys.stderr` への書き込みもリモートに送信される
     sys.stderr.write(f"Got '{val}'\n")
