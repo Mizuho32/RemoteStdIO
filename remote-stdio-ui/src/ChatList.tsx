@@ -24,7 +24,14 @@ function ChatList(props: ChatListProps) {
   let chat = props.appState.chats[props.client.client_id]
   let client_id = props.client.client_id
 
-  function scroll() {
+  function scroll(force: boolean) {
+    const scBtm = scrollBottomRef?.current
+    if (!force && scBtm && scBtm.parentElement) {
+      const msgs = scBtm.parentElement
+      const viewScrollHeight = msgs.scrollHeight - msgs.clientHeight;
+      const rate = msgs.scrollTop / viewScrollHeight * 100
+      if (rate < 90) return
+    }
     scrollBottomRef?.current?.scrollIntoView({behavior: 'smooth'});
   }
 
@@ -45,10 +52,10 @@ function ChatList(props: ChatListProps) {
   }, [chat?.stdin_enabled])
 
   useLayoutEffect(() => {
-    scroll()
+    scroll(true)
   }, []);
   useLayoutEffect(() => {
-  scroll()
+    scroll(false)
   }, [msg_list]);
 
 
@@ -73,7 +80,7 @@ function ChatList(props: ChatListProps) {
       <div id="chatContainer" style={{display: props.style}}>
           <div className='msgsUI'>
             <div id="chat">
-              <div className="chatheader" onClick={()=>scroll()}>
+              <div className="chatheader" onClick={()=>scroll(true)}>
                   <h2 className="no">Chat {props.client.display_name}</h2>
               </div>
               <div className="msgs">
