@@ -1,10 +1,3 @@
-table thead {
-  position: sticky;
-  top:0;
-  left: 0;
-  z-index: 1;
-}
-
 div.extractlist.control {
   position: sticky;
 }
@@ -29,38 +22,23 @@ button.extractlist.open {
   width: 2em;
 }
 
-td > div.extracts {
-  border-style: solid;
-  border-width: 2px;
-  border-color: #8bdffd;
-  padding-bottom: 2px;
-}
-
-#tabs > ul {
-  flex: 0;
-}
-#tabs > div {
-  flex: 1;
-  overflow: hidden;
+#chat {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
-
-#chat {
-  height: 100%;
-}
 .msgsUI {
-  overflow-x: scroll;
-  overflow-y: scroll;
   height: 80%;
 }
 div.msgs {
   border: 2px solid cyan;
+  overflow-x: scroll;
+  overflow-y: scroll;
 }
 div.msg {
-  border: 1px solid blue;
+  /* border: 1px solid blue; */
   /* white-space: pre-wrap; */
-  word-wrap: break-word;
+  /* word-wrap: break-word; */
 }
 .stdinUI {
   width: 100%;
@@ -83,4 +61,9 @@ div.msg {
 
 .send > button {
   font-size: 1.5em;
+}
+
+.msg > p {
+  margin-top: 0px;
+  margin-bottom: 0px;
 }

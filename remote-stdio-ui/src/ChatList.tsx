@@ -2,6 +2,7 @@ import { IoSendSharp, IoClose } from "react-icons/io5";
 
 // import React, { useState } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState, /*useSyncExternalStore*/ } from 'react';
+import { Tooltip } from 'react-tooltip';
 import * as module from './ChatListModules'
 import './ChatList.css'
 
@@ -73,34 +74,27 @@ function ChatList(props: ChatListProps) {
   } else {
     return (
       <>
-      {/*
-      <div className='msglist controls'>
-        <button type="button" className="msglist control" onMouseUp={_ => songUtils.doChat(props.appState)}><FaPlay />Run</button>
-      </div>
-      */}
       <div id="chatContainer" style={{display: props.style}}>
           <div className='msgsUI'>
-            <table className="tablecss" id="chat">
-              <thead onClick={()=>scroll()}>
-                <tr>
-                  <th className="no">Chat {props.client.display_name}</th>
-                </tr>
-              </thead>
-              <tbody id="msgs">
-                {Object.entries(msg_list).map(([_, msg], index) => (
-                  <tr key={index}>
-                    <td>
-                      <div className='msgs'>
-                        <div className='msg'><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown></div>
-                        <div>{msg.datetime.toLocaleDateString()} {msg.datetime.toLocaleTimeString()}</div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* 一番下までスクロールするためのdiv↓ */}
-            <div ref={/*props.*/scrollBottomRef}/>
+            <div id="chat">
+              <div className="chatheader" onClick={()=>scroll()}>
+                  <h2 className="no">Chat {props.client.display_name}</h2>
+              </div>
+              <div className="msgs">
+                <div>
+                  {Object.entries(msg_list).map(([_, msg], index) => (
+                    <div key={index}>
+                          <div className='msg' data-tooltip-id={`${client_id}-${index}`} data-tooltip-content={`${msg.datetime.toLocaleDateString()} ${msg.datetime.toLocaleTimeString()}`}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown>
+                          </div>
+                          <Tooltip id={`${client_id}-${index}`} />
+                    </div>
+                  ))}
+                </div>
+                {/* 一番下までスクロールするためのdiv↓ */}
+                <div ref={/*props.*/scrollBottomRef}/>
+              </div>
+            </div>
         </div>
         <div id={`stdinUI_${client_id}`} className='stdinUI'>
           <textarea id={`stdin_${client_id}`} disabled={!stdin_enabled} className='stdin'></textarea>
