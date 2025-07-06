@@ -35,7 +35,7 @@ class MongoDB
   end
 
   sig { params(client_id: String, _id: T.nilable(String), max_count: Integer).returns(T::Array[Types::Message])}
-  def get_messages(client_id, _id, max_count = 10)
+  def get_messages(client_id, _id, max_count = Types::MONGO_MAX_COUNT)
     found = if _id.nil? then # latest
       T.let(@db.InBox.find(client_id: client_id), Mongo::Collection::View).sort(datetime: -1).limit(max_count)
     else

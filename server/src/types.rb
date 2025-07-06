@@ -11,6 +11,8 @@ if !defined?(DEFINE_ONCE) then
 module Types
   extend T::Sig
 
+  MONGO_MAX_COUNT = 50
+
   class OPTION < T::Struct
     prop :bind, String, default: '0.0.0.0'
     prop :port, Integer, default: 8000
