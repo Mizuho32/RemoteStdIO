@@ -1,6 +1,5 @@
 import { IoSendSharp, IoClose } from "react-icons/io5";
 
-// import React, { useState } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState, /*useSyncExternalStore*/ } from 'react';
 import { Tooltip } from 'react-tooltip';
 import * as module from './ChatListModules'
@@ -9,14 +8,11 @@ import './ChatList.css'
 import type {AppState, Client, Message} from './interfaces'
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-// import * as songUtils from './songUtils'
-// import { startSession } from './utils';
 
 interface ChatListProps {
   appState: AppState
   style: string
   client: Client
-  /*scrollBottomRef: React.RefObject<HTMLDivElement | null>*/
   isMobile?: boolean;
 }
 
