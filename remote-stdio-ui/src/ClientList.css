@@ -20,6 +20,10 @@ button.extractlist.control {
   width: 100%;
   background-color: aquamarine;
 }
+div.selected {
+  font-weight: bold;
+  text-decoration: underline;
+}
 
 button.extractlist.open {
   padding: 0;

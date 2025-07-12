@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import './ClientList.css'
 
 import type {AppState, Client} from './interfaces'
+import { FaKeyboard } from 'react-icons/fa';
 // import * as songUtils from './songUtils'
 // import { startSession } from './utils';
 
@@ -16,6 +17,8 @@ interface ClientListProps {
 
 function ClientList(props: ClientListProps) {
   const [client_list, setClientList] = useState<Client[]>([])
+  let chats = props.appState.chats
+
   useEffect(()=>{
     setClientList(props.appState.clients)
     for (let tmp of props.appState.clients) {
@@ -57,7 +60,7 @@ function ClientList(props: ClientListProps) {
               <tr key={index}>
                 <td>
                   <div className='clients' onMouseUp={()=>props.onClientOpen(client.client_id)}>
-                    <div>{client.display_name}</div>
+                    <div className={client.client_id == props.appState.current_client ? 'selected' : ''}>{client.display_name} {chats[client.client_id]?.stdin_enabled ? <FaKeyboard /> : ''}</div>
                   </div>
                 </td>
               </tr>
