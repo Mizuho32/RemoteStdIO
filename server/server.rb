@@ -20,7 +20,7 @@ parser.on("--mongo-host [localhost]", "mongo host") {|v| option.mongo_host = v}
 parser.on("--mongo-port [27017]", "mongo port") {|v| option.mongo_port = v.to_i }
 parser.on('-u', "--user [user name]", "mongo user") {|v| option.user = v}
 parser.on("--pass [user pw]", "mongo user pass") {|v| option.password = v}
-parser.on("--client [nil]", "client optration. ex. '+user'") {|v| option.client = v }
+parser.on("--client [nil]", "client operation. ex. '+user'") {|v| option.client = v }
 parser.on('-n', "--notify-config [notify_conf.yaml]", "config of notification (e.g. gotify)") {|v|
   require 'yaml'
   yaml = YAML.load_file(v)
@@ -29,10 +29,10 @@ parser.on('-n', "--notify-config [notify_conf.yaml]", "config of notification (e
   option.notify = Notify.new(yaml[:domain], yaml[:token])
 }
 parser.on("--priority [number]", "Priority -1..10?") {|v| option.priority = v.to_i }
+parser.on("--hostname [hostname]", "Hostname used in notify message.") {|v| option.hostname = v }
 
 parser.parse!(ARGV)
 
-# For sinatra help
 # if not ARGV.map{|el| el =~ /h(elp)?/}.any? then
   # begin
     # parser.parse!(ARGV)
@@ -56,6 +56,11 @@ require_relative 'src/main'
 App.init(option)
 App.client_control()
 
+if App.data.option.hostname.empty? then
+  App.data.option.hostname = "localhost:#{App.data.option.port}"
+end
+
+# For sinatra help
 trap(:INT) {
   App.stop!
 }

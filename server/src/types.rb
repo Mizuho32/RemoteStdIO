@@ -23,6 +23,8 @@ module Types
     prop :user, T.nilable(String), default: nil
     prop :password, T.nilable(String), default: nil
     prop :priority, Integer, default: if Sinatra::Base.development? then 0 else -1 end
+    prop :hostname, String, default: ''
+    prop :notify_msg_size, Integer, default: 30
 
     prop :client, T.nilable(String), default: nil
     prop :notify, T.nilable(Notify), default: nil
