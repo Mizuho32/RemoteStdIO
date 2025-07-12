@@ -35,11 +35,11 @@ div.msgs {
   overflow-x: scroll;
   overflow-y: scroll;
 }
-div.msg {
-  /* border: 1px solid blue; */
-  /* white-space: pre-wrap; */
-  /* word-wrap: break-word; */
-}
+/*div.msg {
+  border: 1px solid blue;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}*/
 .stdinUI {
   width: 100%;
   height: 18%;
