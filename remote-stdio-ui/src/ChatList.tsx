@@ -1,4 +1,4 @@
-import { IoSendSharp, IoClose } from "react-icons/io5";
+import { IoSendSharp, IoClose, IoChatboxEllipses } from "react-icons/io5";
 
 import { useEffect, useLayoutEffect, useRef, useState, /*useSyncExternalStore*/ } from 'react';
 import { Tooltip } from 'react-tooltip';
@@ -91,7 +91,7 @@ function ChatList(props: ChatListProps) {
           <div className='msgsUI'>
             <div id="chat">
               <div className="chatheader" onClick={()=>scroll(true)}>
-                  <h2 className="no">Chat {props.client.display_name}</h2>
+                  <h2 className="no"> <span><IoChatboxEllipses /></span>{props.client.display_name}</h2>
               </div>
               <div className="msgs">
                 <div>
