@@ -18,12 +18,14 @@ body {
 }
 
 #client-list-container {
-  width: 20%;
+  flex-shrink: 0;
   /* height: 100vh; */
   /* padding: 1rem; */
 }
 
 #chat-container {
-  width: 80%;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0; /* ← これ重要！ */
   /* height: 100vh; */
 }
