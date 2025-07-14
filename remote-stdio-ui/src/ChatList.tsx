@@ -111,7 +111,7 @@ function ChatList(props: ChatListProps) {
         </div>
         <div id={`stdinUI_${client_id}`} className='stdinUI'>
           <textarea id={`stdin_${client_id}`} disabled={!stdin_enabled} className='stdin'></textarea>
-          <div className="send" >
+          <div className={`send ${stdin_enabled ? 'enabled' : 'disabled'}`} >
             <button type="button" id={`send_${client_id}`} disabled={!stdin_enabled} onClick={_=>module.onButtonClick(client_id)}><IoSendSharp /></button>
             <button type="button" id={`cancel_${client_id}`} ><IoClose /></button>
           </div>

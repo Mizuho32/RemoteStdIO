@@ -52,6 +52,12 @@ div.msgs {
   height: 100%;
   flex-grow:1
 }
+div.enabled > button {
+  color: green;
+}
+div.disabled > button {
+  color: gray;
+}
 .send {
   /* width: 10%; */
   height: 100%;
