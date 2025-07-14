@@ -34,7 +34,8 @@ function ChatList(props: ChatListProps) {
       const msgs = scBtm.parentElement
       const viewScrollHeight = msgs.scrollHeight - msgs.clientHeight;
       const rate = msgs.scrollTop / viewScrollHeight * 100
-      if (rate < 90) return
+      // far > 20% from bottom, no scroll
+      if (rate < 80) return false
     }
     scrollBottomRef?.current?.scrollIntoView({behavior: 'smooth'});
 
