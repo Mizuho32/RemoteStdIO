@@ -39,6 +39,9 @@ div.msgs {
   overflow-x: scroll;
   overflow-y: scroll;
 }
+div.msgs > div {
+  padding-left: 0.3em;
+}
 /*div.msg {
   border: 1px solid blue;
   white-space: pre-wrap;
