@@ -1,4 +1,5 @@
 import { IoSendSharp, IoClose, IoChatboxEllipses } from "react-icons/io5";
+import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 
 import { useEffect, useLayoutEffect, useRef, useState, /*useSyncExternalStore*/ } from 'react';
 import { Tooltip } from 'react-tooltip';
@@ -13,6 +14,7 @@ interface ChatListProps {
   appState: AppState
   style: string
   client: Client
+  onClientsShown: ()=>void
   isMobile?: boolean;
 }
 
@@ -68,7 +70,14 @@ function ChatList(props: ChatListProps) {
     }
   }, [msg_list]);
 
-
+  function showClients() {
+    const elm: HTMLDivElement|null = document.querySelector('#clientListContainer')
+    if (elm) {
+      elm.style.width = '100%' // faster
+      // elm.style.display = ''
+      props.onClientsShown()
+    }
+  }
 
   if (props.isMobile) {
     return (
@@ -91,7 +100,10 @@ function ChatList(props: ChatListProps) {
           <div className='msgsUI'>
             <div id="chat">
               <div className="chatheader" onClick={()=>scroll(true)}>
-                  <h2 className="no"> <span><IoChatboxEllipses /></span>{props.client.display_name}</h2>
+                  <h2 className="no">
+                    {props.appState.clients_hidden ? <span onClick={_=>showClients()}><MdOutlineKeyboardDoubleArrowRight /></span> : <></>}
+                    <span><IoChatboxEllipses /></span>{props.client.display_name}
+                  </h2>
               </div>
               <div className="msgs">
                 <div>

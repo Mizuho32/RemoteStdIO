@@ -13,7 +13,7 @@ import * as AppModules from './AppModules'
 import ChatList from './ChatList'
 
 function App() {
-  const [appState, setAppState] = useState<AppState>({clients: [], chats: {}})
+  const [appState, setAppState] = useState<AppState>({clients: [], chats: {}, clients_hidden: false})
   // msgs: [], stdin_disabled: true
   const hasRun = useRef(false)
 
@@ -45,7 +45,7 @@ function App() {
   return (
     <>
       <div id="client-list-container">
-        <ClientList appState={appState} onClientOpen={(cid)=>AppModules.onClientOpen(cid, appState, setAppState)}></ClientList>
+        <ClientList appState={appState} onClientOpen={(cid)=>AppModules.onClientOpen(cid, appState, setAppState)} onClientsHidden={()=>AppModules.onClientsHidden(true, appState, setAppState)}></ClientList>
         {/*
         <h1>Vite + React</h1>
         <div className="card">
@@ -61,7 +61,7 @@ function App() {
       <div id="chat-container">
         {
           appState.clients.map(client => 
-          <ChatList appState={appState} client={client} style={client.client_id == appState.current_client ? 'block' : 'none' } key={client.client_id}></ChatList>
+          <ChatList appState={appState} client={client} style={client.client_id == appState.current_client ? 'block' : 'none' } key={client.client_id} onClientsShown={()=>AppModules.onClientsHidden(false, appState, setAppState)}></ChatList>
           )
         }
         {/*<ChatList appState={appState} ></ChatList>*/}

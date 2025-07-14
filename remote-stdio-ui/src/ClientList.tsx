@@ -1,7 +1,8 @@
 // import { FaPlay } from 'react-icons/fa';
+import { MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
 
 // import React, { useState } from 'react'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './ClientList.css'
 
 import type {AppState, Client} from './interfaces'
@@ -12,11 +13,13 @@ import { FaKeyboard } from 'react-icons/fa';
 interface ClientListProps {
   appState: AppState
   onClientOpen: (client_id: string)=> void
+  onClientsHidden: ()=>void
   isMobile?: boolean;
 }
 
 function ClientList(props: ClientListProps) {
   const [client_list, setClientList] = useState<Client[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
   let chats = props.appState.chats
 
   useEffect(()=>{
@@ -25,6 +28,14 @@ function ClientList(props: ClientListProps) {
       console.log("Changed", tmp)
     }
   }, [props.appState.clients])
+
+  function hideClients() {
+    if (props.appState.current_client && containerRef?.current?.style) {
+      containerRef.current.style.width = '0'
+      // containerRef.current.style.display = 'None'
+      props.onClientsHidden()
+    }
+  }
 
   if (props.isMobile) {
     return (
@@ -48,7 +59,7 @@ function ClientList(props: ClientListProps) {
         <button type="button" className="clientlist control" onMouseUp={_ => songUtils.doClient(props.appState)}><FaPlay />Run</button>
       </div>
       */}
-      <div id="clientListContainer">
+      <div id="clientListContainer" ref={containerRef}>
         <table className="tablecss">
           <thead>
             <tr>
@@ -67,6 +78,7 @@ function ClientList(props: ClientListProps) {
             ))}
           </tbody>
         </table>
+        <div className="hideUI" onClick={hideClients}><span><MdOutlineKeyboardDoubleArrowLeft /></span></div>
       </div>
       </>
     )

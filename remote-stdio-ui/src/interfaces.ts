@@ -51,6 +51,7 @@ export interface AppState {
     clients: Client[]
     chats: {[client_id: string]: Chat}
     current_client?: string
+    clients_hidden: boolean
 }
 /*
     filename: string

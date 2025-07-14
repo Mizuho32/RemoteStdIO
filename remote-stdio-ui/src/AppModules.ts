@@ -33,6 +33,10 @@ export async function onClientOpen(client_id: string, appState: AppState, setApp
     */
 }
 
+export function onClientsHidden(hidden: boolean, appState: AppState, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
+    setAppState({...appState, clients_hidden: hidden})
+}
+
 export function startWebSocket(setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
     // send
     let socket = new WebSocket(`ws://${location.host}/api/websocket/front`);

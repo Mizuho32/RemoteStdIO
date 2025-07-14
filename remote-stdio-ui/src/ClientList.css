@@ -24,6 +24,12 @@ button.extractlist.control {
   width: 100%;
   background-color: aquamarine;
 }
+
+div.hideUI {
+  text-align: center;
+  font-size: 2em;
+}
+
 div.selected {
   font-weight: bold;
   text-decoration: underline;
