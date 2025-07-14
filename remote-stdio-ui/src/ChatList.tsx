@@ -45,10 +45,10 @@ function ChatList(props: ChatListProps) {
   useEffect(()=>{
     const chat = props.appState.chats[props.client.client_id]
     if (chat?.msgs) {
-      console.log("Effect MSG")
-      for (let tmp of chat.msgs) {
-        console.log("Effect msg", tmp)
-      }
+      // console.log("Effect MSG")
+      // for (let tmp of chat.msgs) {
+      //   console.log("Effect msg", tmp)
+      // }
       setMsgList(chat.msgs)
     }
   }, [chat?.msgs])
