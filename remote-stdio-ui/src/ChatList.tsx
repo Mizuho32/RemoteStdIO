@@ -17,6 +17,7 @@ interface ChatListProps {
 }
 
 function ChatList(props: ChatListProps) {
+  const [firstView, setFirstView] = useState<boolean>(true)
   const [msg_list, setMsgList] = useState<Message[]>([])
   const [stdin_enabled, setStdinEnabled] = useState(false)
   const scrollBottomRef = useRef<HTMLDivElement>(null);
@@ -25,6 +26,9 @@ function ChatList(props: ChatListProps) {
   let client_id = props.client.client_id
 
   function scroll(force: boolean) {
+    // Not selected, no scroll
+    if (props.appState.current_client != client_id) return false
+
     const scBtm = scrollBottomRef?.current
     if (!force && scBtm && scBtm.parentElement) {
       const msgs = scBtm.parentElement
@@ -33,6 +37,8 @@ function ChatList(props: ChatListProps) {
       if (rate < 90) return
     }
     scrollBottomRef?.current?.scrollIntoView({behavior: 'smooth'});
+
+    return scBtm && scBtm.parentElement
   }
 
   useEffect(()=>{
@@ -55,7 +61,10 @@ function ChatList(props: ChatListProps) {
     scroll(true)
   }, []);
   useLayoutEffect(() => {
-    scroll(false)
+    //         true until first success scroll
+    if (scroll(firstView)) {
+      setFirstView(false)
+    }
   }, [msg_list]);
 
 
