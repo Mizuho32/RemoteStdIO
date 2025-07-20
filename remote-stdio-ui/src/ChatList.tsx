@@ -1,5 +1,7 @@
 import { IoSendSharp, IoClose, IoChatboxEllipses } from "react-icons/io5";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { buildStyles, CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 import { useEffect, useLayoutEffect, useRef, useState, /*useSyncExternalStore*/ } from 'react';
 import { Tooltip } from 'react-tooltip';
@@ -10,7 +12,7 @@ import type {AppState, Client, Message} from './interfaces'
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-interface ChatListProps {
+export interface ChatListProps {
   appState: AppState
   style: string
   client: Client
@@ -18,31 +20,27 @@ interface ChatListProps {
   isMobile?: boolean;
 }
 
+export interface WheeRefreshState {
+  wheelUpCount: number
+  timeout_handle?: number
+  timeout_disapear_handle?: number
+  fireCount: number
+  showCount: number
+  Timeout: number
+  Timeout_slow: number
+  Timeout_disapear: number
+}
+
 function ChatList(props: ChatListProps) {
   const [firstView, setFirstView] = useState<boolean>(true)
   const [msg_list, setMsgList] = useState<Message[]>([])
   const [stdin_enabled, setStdinEnabled] = useState(false)
+  const [wheelRefreshState, setWheelRefreshState] = useState({wheelUpCount: 0,  fireCount: 9, showCount: 3, Timeout: 500, Timeout_slow: 1500, Timeout_disapear: 1000})
   const scrollBottomRef = useRef<HTMLDivElement>(null);
 
   let chat = props.appState.chats[props.client.client_id]
   let client_id = props.client.client_id
 
-  function scroll(force: boolean) {
-    // Not selected, no scroll
-    if (props.appState.current_client != client_id) return false
-
-    const scBtm = scrollBottomRef?.current
-    if (!force && scBtm && scBtm.parentElement) {
-      const msgs = scBtm.parentElement
-      const viewScrollHeight = msgs.scrollHeight - msgs.clientHeight;
-      const rate = msgs.scrollTop / viewScrollHeight * 100
-      // far > 20% from bottom, no scroll
-      if (rate < 80) return false
-    }
-    scrollBottomRef?.current?.scrollIntoView({behavior: 'smooth'});
-
-    return scBtm && scBtm.parentElement
-  }
 
   useEffect(()=>{
     const chat = props.appState.chats[props.client.client_id]
@@ -61,23 +59,28 @@ function ChatList(props: ChatListProps) {
   }, [chat?.stdin_enabled])
 
   useLayoutEffect(() => {
-    scroll(true)
+    module.scroll(true, props, client_id, scrollBottomRef)
+
+    // Wheel refresh firer
+    const container = scrollBottomRef.current?.parentElement
+    if (container) {
+      const onWheel = (e: WheelEvent)=>module.onWheel(e, container, wheelRefreshState, setWheelRefreshState)
+      container?.addEventListener('wheel', onWheel);
+      return () => container?.removeEventListener('wheel', onWheel);
+    }
+
   }, []);
   useLayoutEffect(() => {
     //         true until first success scroll
-    if (scroll(firstView)) {
+    if (module.scroll(firstView, props, client_id, scrollBottomRef)) {
       setFirstView(false)
     }
   }, [msg_list]);
 
-  function showClients() {
-    const elm: HTMLDivElement|null = document.querySelector('#clientListContainer')
-    if (elm) {
-      elm.style.width = '100%' // faster
-      // elm.style.display = ''
-      props.onClientsShown()
-    }
-  }
+
+  let percentage = Math.max(Math.floor((wheelRefreshState.wheelUpCount - wheelRefreshState.showCount)/(wheelRefreshState.fireCount - wheelRefreshState.showCount) * 100), 0)
+  let showLoad = wheelRefreshState.wheelUpCount > wheelRefreshState.showCount && wheelRefreshState.wheelUpCount <= wheelRefreshState.fireCount
+  let pathColor = percentage >= 100 ? 'green' : 'blue'
 
   if (props.isMobile) {
     return (
@@ -99,11 +102,13 @@ function ChatList(props: ChatListProps) {
       <div id="chatContainer" style={{display: props.style}}>
           <div className='msgsUI'>
             <div id="chat">
-              <div className="chatheader" onClick={()=>scroll(true)}>
+              <div className="chatheader" onClick={()=>module.scroll(true, props, client_id, scrollBottomRef)}>
                   <h2 className="no">
-                    {props.appState.clients_hidden ? <span onClick={_=>showClients()}><MdOutlineKeyboardDoubleArrowRight /></span> : <></>}
-                    <span><IoChatboxEllipses /></span>{props.client.display_name}
-                  </h2>
+                    {props.appState.clients_hidden ? <span onClick={_ => module.showClients(props)}><MdOutlineKeyboardDoubleArrowRight /></span> : <></>}
+                    <span><IoChatboxEllipses /></span>{props.client.display_name}<span className="load-circle">{
+                      (showLoad) && (<CircularProgressbar value={percentage} styles={buildStyles({pathColor: pathColor})} strokeWidth={16} />)
+                    }</span>
+                </h2>
               </div>
               <div className="msgs">
                 <div>

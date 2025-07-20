@@ -26,6 +26,10 @@ h2 > span {
   padding-left: 0.3em;;
   padding-right: 0.3em;
 }
+.load-circle {
+  width: 1.0em;
+  display: inline-block
+}
 #chat {
   height: 100%;
   display: flex;
@@ -38,6 +42,7 @@ div.msgs {
   border: 2px solid cyan;
   overflow-x: scroll;
   overflow-y: scroll;
+  height: 100%;
 }
 div.msgs > div {
   padding-left: 0.3em;

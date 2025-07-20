@@ -3,6 +3,8 @@ import axios from "axios"
 export default axios
 
 import type { /*AppState, Chat, Message,*/ Stdin } from "./interfaces";
+import type { ChatListProps, WheeRefreshState } from "./ChatList";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 
 export async function onButtonClick(client_id: string) {
     const textarea = document.querySelector<HTMLTextAreaElement>(`#stdin_${client_id}`)
@@ -19,3 +21,58 @@ export async function onButtonClick(client_id: string) {
         textarea.value = ''
     }
 }
+
+export function showClients(props: ChatListProps) {
+    const elm: HTMLDivElement|null = document.querySelector('#clientListContainer')
+    if (elm) {
+        elm.style.width = '100%' // faster
+        // elm.style.display = ''
+        props.onClientsShown()
+    }
+}
+
+export function scroll(force: boolean, props: ChatListProps, client_id: string, scrollBottomRef: RefObject<HTMLDivElement | null>) {
+    // Not selected, no scroll
+    if (props.appState.current_client != client_id) return false
+
+    const scBtm = scrollBottomRef?.current
+    if (!force && scBtm && scBtm.parentElement) {
+        const msgs = scBtm.parentElement
+        const viewScrollHeight = msgs.scrollHeight - msgs.clientHeight;
+        const rate = msgs.scrollTop / viewScrollHeight * 100
+        // far > 20% from bottom, no scroll
+        if (rate < 80) return false
+    }
+    scrollBottomRef?.current?.scrollIntoView({behavior: 'smooth'});
+
+    return scBtm && scBtm.parentElement
+}
+
+export function onWheel(e: WheelEvent, container: HTMLElement|null, wheelRefSt: WheeRefreshState, setWheelRefSt:  Dispatch<SetStateAction<WheeRefreshState>>) {
+if (!container || container.scrollTop > 0 || wheelRefSt.timeout_disapear_handle !==undefined) return;
+
+if (e.deltaY < 0) {
+    if (wheelRefSt.wheelUpCount >= wheelRefSt.fireCount) {
+        // triggerRefresh(); // 自作の「引っ張り判定」
+        console.log('Fire!')
+        wheelRefSt.timeout_disapear_handle = setTimeout(()=>{
+            wheelRefSt.wheelUpCount = 0;
+            wheelRefSt.timeout_disapear_handle = undefined
+            setWheelRefSt(prev=>({...prev, ...wheelRefSt}))
+        }, wheelRefSt.Timeout_disapear)
+
+        setWheelRefSt(prev=>({...prev, ...wheelRefSt}))
+        return
+    }
+    if (wheelRefSt.timeout_handle !== undefined) {
+        clearTimeout(wheelRefSt.timeout_handle);
+    }
+
+    wheelRefSt.timeout_handle = window.setTimeout(() => {
+        wheelRefSt.wheelUpCount = 0;
+        setWheelRefSt(wheelRefSt)
+    }, wheelRefSt.wheelUpCount > wheelRefSt.showCount ? wheelRefSt.Timeout_slow : wheelRefSt.Timeout); // 連続ホイールの判定タイムアウト
+    wheelRefSt.wheelUpCount++;
+    setWheelRefSt(prev=>({...prev, ...wheelRefSt}))
+}
+};
