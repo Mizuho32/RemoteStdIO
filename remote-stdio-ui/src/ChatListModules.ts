@@ -87,3 +87,39 @@ if (e.deltaY < 0) {
     setWheelRefSt(prev=>({...prev, ...wheelRefSt}))
 }
 };
+
+export async function onPull(e: TouchEvent, container: HTMLElement|null, wheelRefSt: WheeRefreshState, setWheelRefSt:  Dispatch<SetStateAction<WheeRefreshState>>, incrementalLoad: ()=>Promise<void>, prependState: RefObject<PrependState>, startY: number|undefined) {
+if (!container || container.scrollTop > 0 || wheelRefSt.timeout_disapear_handle !==undefined || startY === undefined) return;
+
+const touch = e.touches[0];
+const deltaY = (touch.clientY - startY) / 30
+// console.log('move', deltaY)
+
+    if (deltaY > 0) {
+        if (wheelRefSt.wheelUpCount >= wheelRefSt.fireCount && prependState.current.prepending == false) {
+            // incremental msgs load
+            console.log('Fire!')
+
+            // 1. 現在のスクロール量を記録
+            prependState.current = {
+                prevScrollHeight: container.scrollHeight,
+                prevScrollTop: container.scrollTop,
+                prepending: true,
+            };
+            await incrementalLoad()
+
+
+            wheelRefSt.timeout_disapear_handle = setTimeout(() => {
+                wheelRefSt.wheelUpCount = 0;
+                wheelRefSt.timeout_disapear_handle = undefined
+                setWheelRefSt(prev => ({ ...prev, ...wheelRefSt }))
+            }, wheelRefSt.Timeout_disapear)
+
+            setWheelRefSt(prev => ({ ...prev, ...wheelRefSt }))
+            return
+        }
+
+        wheelRefSt.wheelUpCount = deltaY
+        setWheelRefSt(prev=>({...prev, ...wheelRefSt}))
+    }
+}

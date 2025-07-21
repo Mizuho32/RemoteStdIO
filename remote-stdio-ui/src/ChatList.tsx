@@ -74,7 +74,27 @@ function ChatList(props: ChatListProps) {
     if (container) {
       const onWheel = (e: WheelEvent)=>module.onWheel(e, container, wheelRefreshState, setWheelRefreshState, props.incrementalLoad, prependRef)
       container?.addEventListener('wheel', onWheel);
-      return () => container?.removeEventListener('wheel', onWheel);
+
+      let startY: number|undefined = undefined
+      const onTouchStart = function(ev: TouchEvent) {
+          const touch = ev.touches[0];
+          startY = touch.clientY;
+      }
+      const onTouchMove = function(ev: TouchEvent) {
+        module.onPull(ev, container, wheelRefreshState, setWheelRefreshState, props.incrementalLoad, prependRef, startY)
+      }
+      const onTouchEnd = function() {
+        startY = 0
+      }
+      container?.addEventListener('touchstart', onTouchStart);
+      container?.addEventListener('touchend', onTouchEnd);
+      container?.addEventListener('touchmove',  onTouchMove);
+      return () => {
+        container?.removeEventListener('wheel', onWheel)
+        container?.removeEventListener('touchstart', onTouchStart)
+        container?.removeEventListener('touchend', onTouchEnd);
+        container?.removeEventListener('touchmove',  onTouchMove);
+      };
     }
 
   }, []);
@@ -127,11 +147,12 @@ function ChatList(props: ChatListProps) {
                   <h2 className="no">
                     {props.appState.clients_hidden ? <span onClick={_ => module.showClients(props)}><MdOutlineKeyboardDoubleArrowRight /></span> : <></>}
                     <span><IoChatboxEllipses /></span>{props.client.display_name}<span className="load-circle">{
-                      (showLoad) && (<CircularProgressbar value={percentage} styles={buildStyles({pathColor: pathColor})} strokeWidth={16} />)
+                      (showLoad) && (<CircularProgressbar value={percentage} styles={buildStyles({pathColor: pathColor, pathTransitionDuration: 0,})} strokeWidth={16} />)
                     }</span>
                 </h2>
               </div>
               <div className="msgs">
+                {/* <ReactPullToRefresh onRefresh={async ()=>await console.log('Pulled')} className="your-own-class-if-you-want" style={{ textAlign: 'center' }}> */}
                 <div>
                   {Object.entries(msg_list).map(([_, msg], index) => (
                     <div key={index}>
@@ -144,6 +165,7 @@ function ChatList(props: ChatListProps) {
                 </div>
                 {/* 一番下までスクロールするためのdiv↓ */}
                 <div ref={/*props.*/scrollBottomRef}/>
+                {/* </ReactPullToRefresh> */}
               </div>
             </div>
         </div>
