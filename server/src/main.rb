@@ -79,7 +79,7 @@ class App < Sinatra::Base
 
     get '/reload' do
       Pathname("src/").glob("*.rb")
-        .select{|file| file.basename.to_s != "server.rb"}
+        .select{|file| %w[remotestdio].all?{|ignore| !file.basename.to_s.include?(ignore)} }
         .each{|file|
           puts "reload #{file}"
           begin
