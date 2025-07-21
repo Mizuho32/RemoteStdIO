@@ -34,12 +34,22 @@ class MongoDB
     @db.InBox.insert_one(elem.serialize)
   end
 
-  sig { params(client_id: String, _id: T.nilable(String), max_count: Integer).returns(T::Array[Types::Message])}
-  def get_messages(client_id, _id, max_count = Types::MONGO_MAX_COUNT)
+  sig { params(client_id: String, _id: T.nilable(String), max_count: Integer, direction_past: T::Boolean).returns(T::Array[Types::Message])}
+  def get_messages(client_id, _id, max_count = Types::MONGO_MAX_COUNT, direction_past = true)
     found = if _id.nil? then # latest
       T.let(@db.InBox.find(client_id: client_id), Mongo::Collection::View).sort(datetime: -1).limit(max_count)
     else
-      raise NotImplementedError.new()
+      given_id = BSON::ObjectId.from_string(_id)
+      id_filter = if direction_past then
+        { '$lt' => given_id }
+      else
+        { '$gt' => given_id }
+      end
+
+      # `_id` が与えられたIDより「小さい」 → 古いレコード
+      @db.InBox.find({ _id: id_filter, client_id: client_id })
+               .sort(_id: -1)    # 新しい順に並べる（必要なら）
+               .limit(max_count) # N件（ここでは10件）
     end
     return found.map{ _1 }.reverse
   end

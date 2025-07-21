@@ -12,6 +12,7 @@ module Types
   extend T::Sig
 
   MONGO_MAX_COUNT = 50
+  DIRECTION_PAST  = true
 
   class OPTION < T::Struct
     prop :bind, String, default: '0.0.0.0'

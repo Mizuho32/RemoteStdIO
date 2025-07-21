@@ -106,8 +106,11 @@ class App < Sinatra::Base
   get '/stdout' do
     _id = params["_id"]
     client_id = params['client_id']
+    max_count = (params['max_count'] || Types::MONGO_MAX_COUNT).to_i
+    direction_past = if tmp = params['direction_past'] then !tmp.to_i.zero? else Types::DIRECTION_PAST end
+
     if !client_id.nil? then
-      json(App.data.mongodb.get_messages(client_id, _id))
+      json(App.data.mongodb.get_messages(client_id, _id, max_count, direction_past))
     else
       status 404
     end
