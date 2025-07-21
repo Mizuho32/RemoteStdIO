@@ -3,7 +3,7 @@ import axios from "axios"
 export default axios
 
 import type { /*AppState, Chat, Message,*/ Stdin } from "./interfaces";
-import type { ChatListProps, WheeRefreshState } from "./ChatList";
+import type { ChatListProps, PrependState, WheeRefreshState } from "./ChatList";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 
 export async function onButtonClick(client_id: string) {
@@ -48,13 +48,24 @@ export function scroll(force: boolean, props: ChatListProps, client_id: string, 
     return scBtm && scBtm.parentElement
 }
 
-export function onWheel(e: WheelEvent, container: HTMLElement|null, wheelRefSt: WheeRefreshState, setWheelRefSt:  Dispatch<SetStateAction<WheeRefreshState>>) {
+export async function onWheel(e: WheelEvent, container: HTMLElement|null, wheelRefSt: WheeRefreshState, setWheelRefSt:  Dispatch<SetStateAction<WheeRefreshState>>, incrementalLoad: ()=>Promise<void>, prependState: RefObject<PrependState>) {
 if (!container || container.scrollTop > 0 || wheelRefSt.timeout_disapear_handle !==undefined) return;
 
 if (e.deltaY < 0) {
     if (wheelRefSt.wheelUpCount >= wheelRefSt.fireCount) {
         // triggerRefresh(); // 自作の「引っ張り判定」
+
+        // incremental msgs load
         console.log('Fire!')
+        // 1. 現在のスクロール量を記録
+        prependState.current = {
+            prevScrollHeight: container.scrollHeight,
+            prevScrollTop: container.scrollTop,
+            prepending: true,
+        };
+        await incrementalLoad()
+
+
         wheelRefSt.timeout_disapear_handle = setTimeout(()=>{
             wheelRefSt.wheelUpCount = 0;
             wheelRefSt.timeout_disapear_handle = undefined

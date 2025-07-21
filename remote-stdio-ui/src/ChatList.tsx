@@ -12,11 +12,18 @@ import type {AppState, Client, Message} from './interfaces'
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+export interface PrependState {
+  prevScrollHeight: number
+  prevScrollTop: number
+  prepending: boolean
+}
+
 export interface ChatListProps {
   appState: AppState
   style: string
   client: Client
   onClientsShown: ()=>void
+  incrementalLoad: ()=>Promise<void>
   isMobile?: boolean;
 }
 
@@ -37,6 +44,7 @@ function ChatList(props: ChatListProps) {
   const [stdin_enabled, setStdinEnabled] = useState(false)
   const [wheelRefreshState, setWheelRefreshState] = useState({wheelUpCount: 0,  fireCount: 9, showCount: 3, Timeout: 500, Timeout_slow: 1500, Timeout_disapear: 1000})
   const scrollBottomRef = useRef<HTMLDivElement>(null);
+  const prependRef = useRef<PrependState>({ prevScrollHeight: 0, prevScrollTop: 0, prepending: false });
 
   let chat = props.appState.chats[props.client.client_id]
   let client_id = props.client.client_id
@@ -64,7 +72,7 @@ function ChatList(props: ChatListProps) {
     // Wheel refresh firer
     const container = scrollBottomRef.current?.parentElement
     if (container) {
-      const onWheel = (e: WheelEvent)=>module.onWheel(e, container, wheelRefreshState, setWheelRefreshState)
+      const onWheel = (e: WheelEvent)=>module.onWheel(e, container, wheelRefreshState, setWheelRefreshState, props.incrementalLoad, prependRef)
       container?.addEventListener('wheel', onWheel);
       return () => container?.removeEventListener('wheel', onWheel);
     }
@@ -74,6 +82,19 @@ function ChatList(props: ChatListProps) {
     //         true until first success scroll
     if (module.scroll(firstView, props, client_id, scrollBottomRef)) {
       setFirstView(false)
+    }
+
+    const container = scrollBottomRef.current?.parentElement
+    if (prependRef.current.prepending && container) {
+      const { prevScrollHeight, prevScrollTop } = prependRef.current;
+
+      const newScrollHeight = container.scrollHeight;
+      const diff = newScrollHeight - prevScrollHeight;
+
+      container.scrollTop = prevScrollTop + diff;
+
+      // リセット
+      prependRef.current.prepending = false;
     }
   }, [msg_list]);
 

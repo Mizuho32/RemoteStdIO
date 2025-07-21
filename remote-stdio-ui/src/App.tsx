@@ -14,6 +14,7 @@ import ChatList from './ChatList'
 
 function App() {
   const [appState, setAppState] = useState<AppState>({clients: [], chats: {}, clients_hidden: false})
+  const appStateRef = useRef(appState)
   // msgs: [], stdin_disabled: true
   const hasRun = useRef(false)
 
@@ -40,6 +41,11 @@ function App() {
     main();
   }, [])
 
+  useEffect(() => {
+    appStateRef.current = appState;
+  }, [appState]);
+
+
 
 
   return (
@@ -61,7 +67,8 @@ function App() {
       <div id="chat-container">
         {
           appState.clients.map(client => 
-          <ChatList appState={appState} client={client} style={client.client_id == appState.current_client ? 'block' : 'none' } key={client.client_id} onClientsShown={()=>AppModules.onClientsHidden(false, appState, setAppState)}></ChatList>
+          <ChatList appState={appState} client={client} style={client.client_id == appState.current_client ? 'block' : 'none' } key={client.client_id}
+            onClientsShown={()=>AppModules.onClientsHidden(false, appState, setAppState)} incrementalLoad={async ()=> await AppModules.incrementalLoad(client.client_id, 10, true, appStateRef, setAppState)}></ChatList>
           )
         }
         {/*<ChatList appState={appState} ></ChatList>*/}

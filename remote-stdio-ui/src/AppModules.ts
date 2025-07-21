@@ -4,6 +4,40 @@ export default axios
 
 import type { AppState, Chat, Message, Stdin } from "./interfaces";
 import * as utils from './utils'
+import type { RefObject } from "react";
+
+export async function getMsgs(client_id: string, max_count?: number, direction_past?: boolean, _id?: string) {
+    let params: any = {client_id: client_id}
+    if (max_count      !== undefined) params['max_count'] = max_count
+    if (direction_past !== undefined) params['direction_past'] = direction_past ? 1 : 0
+    if (_id            !== undefined) params['_id'] = _id
+
+    const result = await axios.get<Message[]>(`/api/stdout`, {params: params})
+    if (result.status == 200) {
+        const newmsgs: Message[] = result.data.map(msg => ({ ...msg, datetime: new Date(msg.datetime) }))
+        return newmsgs
+    }
+    return []
+}
+
+export async function incrementalLoad(client_id: string, size: number, to_past: boolean, appStateRef: RefObject<AppState>, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
+    const appState = appStateRef.current
+    if (!appState) return
+
+    const msgs = appState?.chats[client_id]?.msgs
+    if (msgs) {
+        const _id = msgs[0]._id
+        const increMsgs = await getMsgs(client_id, size, to_past, _id)
+        // console.log('incMsgs', client_id, _id, increMsgs)
+
+        setAppState(prev => {
+            const chats = prev.chats
+            const chat = chats[client_id] || {}
+            const newone: AppState = { ...prev, chats: { ...chats, [client_id]: { ...chat, msgs: [...increMsgs, ...(chat.msgs || [])] } } }
+            return newone
+        })
+    }
+}
 
 export async function onClientOpen(client_id: string, appState: AppState, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
     const chats = appState.chats
@@ -12,11 +46,8 @@ export async function onClientOpen(client_id: string, appState: AppState, setApp
     let newState: AppState = {...appState, current_client: client_id}
 
     if (msg_is_empty) { // only once
-        const result = await axios.get<Message[]>(`/api/stdout?client_id=${client_id}`)
-        if (result.status == 200) {
-            const newmsgs: Message[] = result.data.map(msg => ({...msg, datetime: new Date(msg.datetime)}))
-            newState = {...newState, chats: {...chats, [client_id]: {...chat,  msgs: [...(chat.msgs||[]), ...newmsgs]}}}
-        }
+        const newmsgs = await getMsgs(client_id)
+        newState = {...newState, chats: {...chats, [client_id]: {...chat,  msgs: [...(chat.msgs||[]), ...newmsgs]}}}
     }
     setAppState(newState)
     /*prev => {
