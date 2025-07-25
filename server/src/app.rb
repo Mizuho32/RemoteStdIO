@@ -122,15 +122,17 @@ class << self
 
       puts(result)
       exit 0
+    else
+      return
     end
-  end
+  end # catch end
   rescue RuntimeError => ex
     msg = ex.message
     exit_status = 2
   ensure
-    $stderr.puts(msg)
-    exit exit_status || 0
-  end
+    $stderr.puts(msg) unless msg.nil?
+    exit exit_status unless exit_status.nil?
+  end # method end
 
 
 end # end of class member defs
