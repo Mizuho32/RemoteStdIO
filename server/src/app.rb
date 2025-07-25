@@ -107,12 +107,15 @@ class << self
       throw :invalid_query, ["Invalid display name #{query_string}", 1] if display_name.empty?
 
       status, result = if cmd == ?+ then
-        App.data.mongodb.client_add(query_string, id: cid)
+        puts "Add #{display_name} (cid:#{cid}) with #{params.inspect}"
+        App.data.mongodb.client_add(display_name, id: cid, params: params)
       elsif cmd == ?= then
-        puts "Edit #{display_name}:#{cid} #{params}"
+        puts "Update #{display_name} (cid:#{cid}) with #{params.inspect}"
         App.data.mongodb.client_update(display_name, id: cid, params: params)
       elsif cmd == ?- then
-        throw :invalid_query, ["client_id is '#{cid}'. Invalid query #{query_string}.", 1] if cid.nil?
+        cid = display_name if cid.nil?
+        throw :invalid_query, ["client_id is '#{cid}'. Invalid query #{query_string}.", 1] if cid.empty?
+        puts "Delete #{display_name} (cid:#{cid})"
         App.data.mongodb.client_del(cid)
       else
         App.data.mongodb.client_list_txt()
