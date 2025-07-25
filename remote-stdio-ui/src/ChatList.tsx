@@ -11,6 +11,7 @@ import './ChatList.css'
 import type {AppState, Client, Message} from './interfaces'
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import asciidoctor from 'asciidoctor' // (1)
 
 export interface PrependState {
   prevScrollHeight: number
@@ -48,6 +49,10 @@ function ChatList(props: ChatListProps) {
 
   let chat = props.appState.chats[props.client.client_id]
   let client_id = props.client.client_id
+  
+  const message_format = props.client.message_format
+  const markdown = message_format?.includes('a') ? false : true
+  const Asciidoctor = markdown ? undefined : asciidoctor()
 
 
   useEffect(()=>{
@@ -157,7 +162,11 @@ function ChatList(props: ChatListProps) {
                   {Object.entries(msg_list).map(([_, msg], index) => (
                     <div key={index}>
                           <div className='msg' data-tooltip-id={`${client_id}-${index}`} data-tooltip-content={`${msg.datetime.toLocaleDateString()} ${msg.datetime.toLocaleTimeString()}`}>
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown>
+                            {
+                              markdown ? 
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown> : 
+                                <div dangerouslySetInnerHTML={{ __html: Asciidoctor?.convert(msg.message.replace(/(?<!\n)\n(?!\n)/g, "  +\n")) || '' }} />
+                            }
                           </div>
                           <Tooltip id={`${client_id}-${index}`} />
                     </div>

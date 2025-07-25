@@ -2,6 +2,7 @@
 export interface Client {
     display_name: string
     client_id: string
+    message_format?: string
 }
 
 
