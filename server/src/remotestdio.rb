@@ -235,12 +235,24 @@ end
 
 if __FILE__ == $0
   RemoteSTDIO.init(T.must(ENV['HOST']), T.must(ENV['CID']))
-  print(
+  if ARGV[0]&.downcase.include?(?a) then
+    print(
 """## Hello world
 **At #{Time.now.iso8601}**
 ~~Test text~~
-Input >>"""
-)
+[line-through]#Test text#
+
+* [.red]#赤くする#
+* [.green]#緑にする#
+
+[.navy]#Input# >>""")
+  else
+    print(
+"""## Hello world
+**At #{Time.now.iso8601}**
+~~Test text~~
+Input >>""")
+  end
   val = gets()
   $stderr.puts("Got #{val}")
   p(val)
