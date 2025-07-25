@@ -54,17 +54,32 @@ class MongoDB
     return found.map{ _1 }.reverse
   end
 
-  sig {params(display_name: String, id: T.nilable(String)).returns([T::Boolean, String])}
-  def client_add(display_name, id: nil)
+  sig {params(display_name: String, id: T.nilable(String), params: T::Hash[Symbol, String]).returns([T::Boolean, String])}
+  def client_add(display_name, id: nil, params: {})
     found = T.let(@db.Clients.find({ display_name: display_name }), Mongo::Collection::View)
     unless found.count_documents.zero? then
       return false, "'#{display_name}' already exists"
     end
 
     client_id = if id.nil? then Nanoid.generate(size: 5) else id end
-    client = Types::Client.new(display_name: display_name, client_id: client_id)
+    client = Types::Client.new(**T.unsafe({display_name: display_name, client_id: client_id, **params}))
     @db.Clients.insert_one(client.serialize)
     return true,"'#{display_name}' added"
+  end
+
+  sig {params(display_name: String, id: T.nilable(String), params: T::Hash[Symbol, String]).returns([T::Boolean, String])}
+  def client_update(display_name, id: nil, params: {})
+    return true, "Empty param  for '#{display_name}'(#{id}). exit" if params.empty?
+
+    query = if id.nil? then { display_name: display_name } else { client_id: display_name } end
+    result = @db.Clients.find_one_and_update(
+      query,
+      { '$set' => params },
+      return_document: :after   # 更新後のドキュメントを返す（省略すれば更新前）
+    )
+    return true,"'#{display_name}'(#{id}) updated: #{result.then{MongoDB.beautify_doc(_1)}.inspect}"
+  rescue StandardError => ex
+    return true,"Error '#{ex.message}' while updating '#{display_name}'(#{id}) :#{params.inspect}"
   end
 
   sig {params(client_id: String).returns([T::Boolean, String])}
@@ -92,11 +107,18 @@ class MongoDB
   sig {returns([T::Boolean, String])}
   def client_list_txt()
     list = @db.Clients.find.map{ |elm|
+      elm = T.let(elm, T::Hash[String, String])
       client = T.let(Types::Client.from_hash(elm), Types::Client)
-      "#{client.display_name}\t#{client.client_id}"
+      params = elm.delete_if { |name, val| name == 'display_name' || name == 'client_id' || name == '_id' || val.nil? }
+      "#{client.display_name}\t#{client.client_id}" + if params.empty? then '' else " #{params.then{MongoDB.beautify_doc(_1)}.inspect}" end 
     }.join("\n")
 
     return true, "Clients:\n#{list}"
+  end
+
+  sig { params(elm: T::Hash[String, T.untyped]).returns(T::Hash[String, T.untyped])}
+  def self.beautify_doc(elm)
+    return elm.delete_if { |name, val| name == 'display_name' || name == 'client_id' || name == '_id' || val.nil? }
   end
 
 end

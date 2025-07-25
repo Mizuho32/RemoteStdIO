@@ -49,6 +49,7 @@ module Types
   class Client < T::Struct
     const :display_name, String
     const :client_id, String
+    const :message_format, T.nilable(String)
   end
 
   class ExtractState
