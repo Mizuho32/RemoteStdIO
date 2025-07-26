@@ -165,7 +165,7 @@ function ChatList(props: ChatListProps) {
                             {
                               markdown ? 
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown> : 
-                                <div dangerouslySetInnerHTML={{ __html: Asciidoctor?.convert(msg.message.replace(/(?<!\n)\n(?!\n)/g, "  +\n")) || '' }} />
+                                <div dangerouslySetInnerHTML={{ __html: Asciidoctor?.convert(msg.message.replace(/(?<!\n)\n(?!\n)/g, "  +\n"), {attributes: {showtitle: true}}) || '' }} />
                             }
                           </div>
                           <Tooltip id={`${client_id}-${index}`} />
