@@ -111,17 +111,17 @@ class RemoteSTDIO
       # puts "Response Body: #{response.body}"
     end
 
-    sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
+    sig {params(a: T.untyped, err: T::Boolean, noremote: T::Boolean).returns(NilClass)}
     def puts(*a, err:false, noremote: false)
       self.write(a.map(&:to_s).join("\n") + "\n", err: err) if !noremote
     end
 
-    sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
+    sig {params(a: T.untyped, err: T::Boolean, noremote: T::Boolean).returns(NilClass)}
     def print(*a, err:false, noremote: false)
       self.write(a.map(&:to_s).join, err: err) if !noremote
     end
 
-    sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
+    sig {params(a: T.untyped, err: T::Boolean, noremote: T::Boolean).returns(NilClass)}
     def p(*a, err:false, noremote: false)
       self.write(a.map(&:inspect).join, err: err) if !noremote
     end
