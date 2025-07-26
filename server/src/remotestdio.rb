@@ -113,12 +113,17 @@ class RemoteSTDIO
 
     sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
     def puts(*a, err:false, noremote: false)
-      self.write(a.join("\n") + "\n", err: err) if !noremote
+      self.write(a.map(&:to_s).join("\n") + "\n", err: err) if !noremote
     end
 
     sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
     def print(*a, err:false, noremote: false)
-      self.write(a.join, err: err) if !noremote
+      self.write(a.map(&:to_s).join, err: err) if !noremote
+    end
+
+    sig {params(a: String, err: T::Boolean, noremote: T::Boolean).void}
+    def p(*a, err:false, noremote: false)
+      self.write(a.map(&:inspect).join, err: err) if !noremote
     end
 
     sig {params(a: String, noremote: T::Boolean, kw: String).returns(String)}
