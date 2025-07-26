@@ -24,6 +24,7 @@ function App() {
     hasRun.current = true
 
     const main = async () => {
+      const current_client_id = localStorage.getItem('rmtstdio.current_client')
       try {
         AppModules.startWebSocket(setAppState)
         const results = await axios.get<Client[]>(`/api/clients`);
@@ -33,6 +34,7 @@ function App() {
           //   // appState.clients = [...appState.clients, client]
           // }
           setAppState(prev => ({...prev, clients: results.data}))
+          if (current_client_id) await AppModules.onClientOpen(current_client_id, appStateRef, setAppState)
         }
       } catch (error) {
         alert(`Error fetching data\n${error}`);
@@ -51,7 +53,7 @@ function App() {
   return (
     <>
       <div id="client-list-container">
-        <ClientList appState={appState} onClientOpen={(cid)=>AppModules.onClientOpen(cid, appState, setAppState)} onClientsHidden={()=>AppModules.onClientsHidden(true, appState, setAppState)}></ClientList>
+        <ClientList appState={appState} onClientOpen={(cid)=>AppModules.onClientOpen(cid, appStateRef, setAppState)} onClientsHidden={()=>AppModules.onClientsHidden(true, appState, setAppState)}></ClientList>
         {/*
         <h1>Vite + React</h1>
         <div className="card">

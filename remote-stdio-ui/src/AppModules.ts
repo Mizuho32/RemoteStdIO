@@ -39,29 +39,22 @@ export async function incrementalLoad(client_id: string, size: number, to_past: 
     }
 }
 
-export async function onClientOpen(client_id: string, appState: AppState, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
+export async function onClientOpen(client_id: string, appStateRef: RefObject<AppState>, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
+    const appState = appStateRef.current
     const chats = appState.chats
     const chat = chats[client_id] || {}
     const msg_is_empty = !chat?.msgs || chat?.msgs.length === 0  //Object.keys(chat).length  === 0
-    let newState: AppState = {...appState, current_client: client_id}
+    let newmsgs: Message[] = []
+    localStorage.setItem('rmtstdio.current_client', client_id)
 
     if (msg_is_empty) { // only once
-        const newmsgs = await getMsgs(client_id)
-        newState = {...newState, chats: {...chats, [client_id]: {...chat,  msgs: [...(chat.msgs||[]), ...newmsgs]}}}
+        newmsgs = await getMsgs(client_id)
     }
-    setAppState(newState)
-    /*prev => {
+    setAppState(prev => {
         const chats = prev.chats
         const chat = chats[client_id] || {}
-        if (chat_is_empty) { // only once
-            const newmsgs: Message[] = result.data.map(msg => ({...msg, datetime: new Date(msg.datetime)}))
-            const newone: AppState = {...prev, current_client: client_id, chats: {...chats, [client_id]: {...chat,  msgs: [...(chat.msgs||[]), ...newmsgs]}}}
-            // console.log(newone)
-            return newone
-        } else 
-            return {...prev, current_client: client_id}
+        return {...prev, chats: {...chats, [client_id]: {...chat,  msgs: [...(chat.msgs||[]), ...newmsgs]}}, current_client: client_id}
     })
-    */
 }
 
 export function onClientsHidden(hidden: boolean, appState: AppState, setAppState: React.Dispatch<React.SetStateAction<AppState>>) {
