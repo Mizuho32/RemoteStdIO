@@ -98,7 +98,7 @@ class App < Sinatra::Base
   post '/stdout' do
     request.body.rewind  # 必須：bodyの読み取り前にポインタを先頭に戻す
     data = JSON.parse(request.body.read, symbolize_names: true)
-    puts(data[:client_id], data[:message][0..30]) if App.data.option.debug
+    App.logger.debug("/stdout cid=#{data[:client_id]} msg=#{data[:message][0..30]}")
 
     App.handle_stdout(data[:message], data[:client_id], data[:err])
   end
@@ -120,8 +120,9 @@ class App < Sinatra::Base
     request.body.rewind  # 必須：bodyの読み取り前にポインタを先頭に戻す
     data = JSON.parse(request.body.read, symbolize_names: true)
     client_id = data[:client_id]
-    if !client_id.nil? then
-      App.data.ws_backs[client_id.to_sym].send(data[:message].to_s)
+    ws = App.data.ws_backs[client_id.to_sym]
+    if ws then
+      ws.send({status: 200, data: data[:message].to_s}.to_json)
       status 200
     else
       status 404
@@ -140,21 +141,23 @@ class App < Sinatra::Base
   get %r'/(api/)?websocket/front' do
     if Faye::WebSocket.websocket?(request.env) then
       ws = Faye::WebSocket.new(request.env)
+      # クライアントの IP アドレスを取得
+      ip = request.env['HTTP_X_FORWARDED_FOR'] || request.env['REMOTE_ADDR']
 
       ws.on :open do |event|
-        puts "WS open #{ws}"
+        App.logger.info("WSF open for #{ip}")
         settings.sockets << ws
         App.data.ws_fronts << ws
 
-        # Open stdins already connected
+        # Notify already opened stdins to newly clients
         App.data.ws_backs.each{|client_id, _|
-          puts "Already connected client #{client_id}. open."
+          App.logger.info "For stdin of #{client_id} already opened, client #{ip} connected."
           ws.send({type: 'stdin', data: {status: 'open', client_id: client_id.to_s}}.to_json)
         }
       end
 
       ws.on :message do |event|
-        puts "WS msg #{event.data}"
+        App.logger.debug("WSF msg '#{event.data[0]}...#{event.data[-1]}' from #{ip}")
 
         # settings.sockets.each do |socket|
         #   socket.send(event.data)
@@ -162,7 +165,7 @@ class App < Sinatra::Base
       end
 
       ws.on :close do |event|
-        puts "WS close #{ws}"
+        App.logger.info("WSF closed for #{ip}")
         settings.sockets.delete(ws)
         App.data.ws_fronts.delete(ws)
       end
@@ -174,32 +177,38 @@ class App < Sinatra::Base
   get %r'/(api/)?websocket/back' do
     if Faye::WebSocket.websocket?(request.env) then
       ws = Faye::WebSocket.new(request.env)
-      will_close = Thread.new {
+      ip = T.let((request.env['HTTP_X_FORWARDED_FOR'] || request.env['REMOTE_ADDR']).to_sym, Symbol)
+      will_close_without_clientid_get = Thread.new {
         sleep 5
+        App.logger.warn("WSB closed for #{ip} no client_id notify")
         ws.close
-        puts "closed #{ws}"
       }
 
       ws.on :open do |event|
-        puts "BWS open #{ws}"
+        App.logger.info("WSB opened for #{ip}")
         settings.sockets << ws
       end
 
       ws.on :message do |event|
-        puts "BWS msg #{event.data}"
         client_id = T.let(event.data, String).to_sym
-        puts "WARNING: #{client_id} already registered. Overwrite" if App.data.ws_backs[client_id]
+        if App.data.ws_backs[client_id] then
+          App.logger.warn("#{client_id}@#{ip} already registered. close.")
+          ws.send({status: 403, data: "#{client_id}@#{ip} already registered. close."}.to_json)
+          ws.close
+          next
+        end
 
+        App.logger.info("WSB client add #{client_id.inspect}")
         App.data.ws_backs[client_id] = ws
         App.data.ws_fronts.each{
            _1.send({type: 'stdin', data: {status: 'open', client_id: client_id.to_s}}.to_json)
         }
 
-        will_close.kill
+        will_close_without_clientid_get.kill
       end
 
       ws.on :close do |event|
-        puts "BWS close #{ws}"
+        App.logger.info("WSB close #{ip}")
 
         App.data.ws_backs.delete_if{|cid, ws_cand|
           if ws_cand == ws then
@@ -221,7 +230,7 @@ class App < Sinatra::Base
     current_port = settings.port
     query_string = request.query_string
     uri = URI.parse("http://localhost:#{current_port}/#{api_name}?#{query_string}")
-    puts "Get proxy #{api_name} to :#{current_port}"
+    App.logger.debug("GProxy #{api_name} to :#{current_port}/#{api_name}")
 
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Get.new(uri.request_uri)
@@ -236,7 +245,7 @@ class App < Sinatra::Base
     current_port = settings.port
     query_string = request.query_string
     uri = URI.parse("http://localhost:#{current_port}/#{api_name}?#{query_string}")
-    puts "Post proxy #{api_name} to :#{current_port}"
+    App.logger.debug("PProxy #{api_name} to :#{current_port}/#{api_name}")
 
     http = Net::HTTP.new(uri.host, uri.port)
 

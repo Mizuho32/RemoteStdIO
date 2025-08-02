@@ -4,9 +4,16 @@ require 'net/http'
 require 'uri'
 require 'json'
 require 'delegate'
+require 'logger'
 
 require 'sorbet-runtime'
 require 'faye/websocket'
+
+extend T::Sig
+
+LOGGER = Logger.new(STDOUT)
+set_level = ENV['LOG_LEVEL'].to_s.to_sym
+LOGGER.level = ( (Logger.constants.include?(set_level) && Logger.const_get(set_level)) || Logger::INFO )
 
 
 class WhineThread < Thread
@@ -32,34 +39,39 @@ class WSIN
     @client_id = client_id
     @host = host
     @msg = ''
-    @got_msg = T.let(false, T::Boolean)
+    @got_msg = T.let(false, T.any(T::Boolean, Integer))
     @connection = WhineThread.new {
       loop do
         EM.run {
         ws = T.let(Faye::WebSocket::Client.new("ws://#{host}/websocket/back"), T.nilable(Faye::WebSocket::Client))
 
         ws&.on :open do |event|
-          #p [:open]
+          LOGGER.debug("WSIN opend. send ack #{@client_id}")
           ws.send(@client_id)
         end
 
         ws&.on :message do |event|
-          #p [:message, event.data]
-          #if event.data.include?('close') then
-            @msg = event.data
+          LOGGER.debug("WSIN msg #{event.data.inspect}")
+          data = JSON.parse(event.data, symbolize_names: true)
+          if data[:status] == 200 then
+            @msg = data[:data]
             @got_msg = true
             ws.close()
-            #EM.stop
-          #end
+          else
+            @msg = ''
+            @got_msg = data[:status]
+            ws.close()
+          end
         end
 
         ws&.on :close do |event|
-          #p [:close, event.code, event.reason]
+          LOGGER.debug("WSIN :close #{event.code} #{event.reason}")
           if @got_msg then
             ws = nil
             EM.stop
+            LOGGER.error("WSIN refused. already stdin opened?") if @got_msg == 403
           else
-            STDOUT.puts("WS closed before msg. Retry after 10s")
+            LOGGER.warn("WSIN closed before msg. Retry after 10s")
             sleep 10
             ws = Faye::WebSocket::Client.new("ws://#{host}/websocket/back")
           end
@@ -129,38 +141,52 @@ class RemoteSTDIO
       return nil
     end
 
+    sig {params(retval: T.nilable(String), threads: T::Hash[Symbol, T.nilable(WhineThread)], counter_key: Symbol, trial: Integer).returns(T.nilable(String))}
+    def handle_concurrency(retval, threads, counter_key, trial: 3)
+      @mutex.synchronize do
+        counter = catch :counter do
+          trial.times {
+            canbe_couter = threads[counter_key]
+            throw :counter, canbe_couter unless canbe_couter.nil?
+            sleep 0.5
+          }
+          LOGGER.error("Failed to get #{counter_key} thead for gets")
+          nil
+        end
+        return nil if counter.nil?
+
+        if counter&.status then
+          LOGGER.debug("Will kill #{counter_key} stdin")
+          counter.kill
+        end
+      end
+      return retval
+    end
+
     sig {params(a: String, noremote: T::Boolean, kw: String).returns(String)}
     def gets(*a, noremote: false, **kw)
       return STDIN.gets(*T.unsafe(a), **kw) if @client_id.nil? || noremote
 
-      threads = T.let([], T::Array[WhineThread])
+      threads = T.let({}, T::Hash[Symbol, WhineThread])
       wsin = WSIN.new(@host, @client_id)
       @retval = T.let(nil, T.nilable(String))
-      threads[0] = WhineThread.new{
+
+      threads[:STDIN] = WhineThread.new {
         retval = T.let(STDIN.gets(*T.unsafe(a)), T.nilable(String))
+        LOGGER.debug("STDIN got #{retval.inspect}")
         if !retval.nil? then # if nil, close STDIN thread and wait wsin
-          wsin.got_msg = true
-          counter = threads[1]
-          @mutex.synchronize do
-            @retval = retval
-            if counter&.status then
-              counter.kill
-            end
-          end
+          wsin.got_msg = true # break wsin gets loop to avoid loop even after ws.close
+          @retval = handle_concurrency(retval, threads, :wsin) 
         end
       }
-      threads[1] = WhineThread.new{
+      threads[:wsin] = WhineThread.new {
         retval = wsin.gets(*T.unsafe(a))
-        counter = threads[0]
-        @mutex.synchronize do
-          @retval = retval
-          if counter&.status then
-            counter.kill
-          end
-        end
+        LOGGER.debug("wsin got #{retval.inspect}")
+        @retval = handle_concurrency(retval, threads, :STDIN) 
       }
-      threads.each{ _1.join }
-      return @retval || ''
+
+      threads.each{|_, t| t.join }
+      return @retval.to_s
     end
 
   end
@@ -243,7 +269,7 @@ end
 
 if __FILE__ == $0
   RemoteSTDIO.init(T.must(ENV['HOST']), T.must(ENV['CID']))
-  if ARGV[0]&.downcase.include?(?a) then
+  if ARGV.delete_at(0)&.downcase&.include?(?a) then
     print(
 """## Hello world
 **At #{Time.now.iso8601}**
@@ -259,6 +285,17 @@ if __FILE__ == $0
 """## Hello world
 **At #{Time.now.iso8601}**
 ~~Test text~~
+````
+## This is
+```bash
+echo raw code ${HOME}
+```
+````
+
+```bash
+$ ls ${HOME}
+```
+
 Input >>""")
   end
   val = gets()
