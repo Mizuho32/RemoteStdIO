@@ -2,6 +2,7 @@
 
 require 'date'
 require 'json'
+require 'logger'
 
 require 'nanoid'
 
@@ -15,6 +16,8 @@ class << self
 
   sig { returns(Types::AppData) }
   attr_reader :data
+  sig { returns(Logger) }
+  attr_reader :logger
 
   sig { returns(T::Boolean) }
   attr_accessor :restart
@@ -30,6 +33,8 @@ class << self
 
     mongo = MongoDB.new(opt.mongo_host, opt.mongo_port, db_name, opt.user, opt.password)
     @data = Types::AppData.new(mongodb: mongo, option: opt, ws_fronts: [], ws_backs: {})
+    @logger = Logger.new(STDOUT)
+    @logger.level = Logger.const_get( (ENV['LOG_LEVEL'] || (@data.option.debug && 'DEBUG') || 'INFO').to_sym )
     @restart = false
     # @mutex = Thread::Mutex.new()
   end
