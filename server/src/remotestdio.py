@@ -56,9 +56,14 @@ class WSIN:
                     # 接続時にクライアントIDを送信
                     ws.send(self.client_id)
                     # メッセージを受信するまで待機
-                    self.msg = ws.recv()
-                    self.got_msg = True
-                    return self.msg
+                    data = json.loads(ws.recv())
+                    self.msg = data['data']
+                    if data['status'] == 200:
+                        self.got_msg = True
+                    else:
+                        self.got_msg = data['status']
+                        print("WSIN refused. already stdin opened?")
+                    # return self.msg
                 finally:
                     ws.close()
             except (websocket.WebSocketConnectionClosedException, ConnectionRefusedError, ConnectionResetError) as e:
