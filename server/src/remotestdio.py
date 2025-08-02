@@ -1,5 +1,6 @@
 # Thank you Gemini 2.5 Pro
 
+import select
 import sys
 import os
 import threading
@@ -183,11 +184,19 @@ class RemoteSTDIO:
 
         result = [None]  # スレッド間で共有するためのミュータブルなオブジェクト
         got_input_event = threading.Event()
+        stop_event = threading.Event()
+
+        def non_blocking_input():
+            while not got_input_event.is_set():
+                # select で stdin を0.5秒ごとに確認
+                rlist, _, _ = select.select([sys.stdin], [], [], 0.5)
+                if rlist:
+                    return sys.stdin.readline()
 
         def read_local_input():
             """ローカルのコンソールからの入力を読み取るスレッド関数。"""
             try:
-                local_val = cls._original_input()
+                local_val = non_blocking_input()#cls._original_input()
                 if not got_input_event.is_set():
                     with cls._lock:
                         if not got_input_event.is_set():
