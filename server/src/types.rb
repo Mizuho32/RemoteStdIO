@@ -35,7 +35,7 @@ module Types
     const :mongodb, MongoDB
     const :option, Types::OPTION
     const :ws_fronts, T::Array[Faye::WebSocket]
-    const :ws_backs,  T::Hash[Symbol, Faye::WebSocket]
+    const :ws_backs,  T::Hash[Symbol, T.nilable(Faye::WebSocket)]
   end
 
   class Message < T::Struct
