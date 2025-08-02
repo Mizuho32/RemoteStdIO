@@ -7,8 +7,9 @@ import type { ChatListProps, PrependState, WheeRefreshState } from "./ChatList";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 
 export async function onButtonClick(client_id: string) {
+    const pwinput = document.querySelector<HTMLTextAreaElement>(`#stdin_${client_id}_pw`)
     const textarea = document.querySelector<HTMLTextAreaElement>(`#stdin_${client_id}`)
-    const textBody = textarea?.value
+    const textBody = pwinput?.value || textarea?.value
     if (textBody) {
         const json: Stdin = {status: 'input', client_id: client_id, message: textBody}
         await axios.post('/api/stdin', json, {
@@ -18,7 +19,8 @@ export async function onButtonClick(client_id: string) {
                 'Content-Type': 'application/json',
             },
         })
-        textarea.value = ''
+        if (textarea) textarea.value = ''
+        if (pwinput) pwinput.value = ''
     }
 }
 
