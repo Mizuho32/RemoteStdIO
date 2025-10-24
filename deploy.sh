@@ -1,0 +1,1 @@
+/home/mizuho/prjs/envs/remote-stdio/deploy.sh
