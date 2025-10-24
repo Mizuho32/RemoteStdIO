@@ -53,6 +53,7 @@ export interface AppState {
     chats: {[client_id: string]: Chat}
     current_client?: string
     clients_hidden: boolean
+    tab_active: boolean
 }
 /*
     filename: string

@@ -12,8 +12,11 @@ import ClientList from './ClientList'
 import * as AppModules from './AppModules'
 import ChatList from './ChatList'
 
+const title = 'Remote StdIO';
+const change = ' *';
+
 function App() {
-  const [appState, setAppState] = useState<AppState>({clients: [], chats: {}, clients_hidden: false})
+  const [appState, setAppState] = useState<AppState>({clients: [], chats: {}, clients_hidden: false, tab_active: true})
   const appStateRef = useRef(appState)
   // msgs: [], stdin_disabled: true
   const hasRun = useRef(false)
@@ -41,11 +44,38 @@ function App() {
       }
     };
     main();
+
+    // Favicon notify preparation
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        setAppState(prev => ({...prev, tab_active: true}))
+        document.title = title;
+      } else {
+        setAppState(prev => ({...prev, tab_active: false}))
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      // document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [])
 
   useEffect(() => {
     appStateRef.current = appState;
   }, [appState]);
+
+  // favicon notify
+  useEffect(()=> {
+    const curAppState = appStateRef.current;
+    const stdin_enabled_exists = Object.values(curAppState.chats).some(chat => chat.stdin_enabled);
+    const cur_title = document.title;
+    // console.log(`appState.chats change, ${curAppState.tab_active} ${stdin_enabled_exists} ${cur_title}`)
+
+    if (!curAppState.tab_active && stdin_enabled_exists && cur_title == title) {
+      document.title = document.title + change;
+    }
+  }, [appState.chats])
 
 
 
