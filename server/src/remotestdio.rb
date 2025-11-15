@@ -150,6 +150,11 @@ class RemoteSTDIO
       return nil
     end
 
+    def warn(*message, uplevel: nil, category: nil)
+      message << "#remotestdio: uplevel and catego;y is not implemented" if (uplevel || category)
+      print(*T.unsafe(message), err: true)
+    end
+
     sig {params(retval: T.nilable(String), threads: T::Hash[Symbol, T.nilable(WhineThread)], counter_key: Symbol, trial: Integer).returns(T.nilable(String))}
     def handle_concurrency(retval, threads, counter_key, trial: 3)
       @mutex.synchronize do
@@ -214,7 +219,7 @@ class FakeSTDERR < SimpleDelegator
 end
 
 module Kernel
-  %i[puts print gets].each{|method_name|
+  %i[puts print gets warn].each{|method_name|
     orig_name = :"#{method_name}_orig"
     alias_method(orig_name, :"#{method_name}")
     define_method(method_name){|*a, **kw|
@@ -308,6 +313,6 @@ $ ls ${HOME}
 Input >>""")
   end
   val = gets()
-  $stderr.puts("Got #{val}")
+  warn("Got #{val}")
   p(val)
 end
