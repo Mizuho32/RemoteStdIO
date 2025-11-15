@@ -5,6 +5,7 @@ source "https://rubygems.org"
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'faye-websocket'
+gem 'websocket-client-simple'
 gem 'puma'
 gem 'rackup'
 
@@ -34,9 +35,10 @@ group :develop do
   ##gem "google-apis-youtube_v3"
   #gem 'test-unit'
   ##gem "faye-websocket"
-  #gem 'websocket-client-simple'
   #gem "rake"
   #gem "ffi-rzmq"
   #gem "iruby"
   #gem "nanoid"
 end
+
+gem "redcarpet", "~> 3.6"
