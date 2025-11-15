@@ -7,7 +7,7 @@ require 'delegate'
 require 'logger'
 
 require 'sorbet-runtime'
-require 'faye/websocket'
+require 'websocket-client-simple'
 
 extend T::Sig
 
@@ -41,44 +41,53 @@ class WSIN
     @msg = ''
     @got_msg = T.let(false, T.any(T::Boolean, Integer))
     @connection = WhineThread.new {
+      # ws simple's self in ws.on block is not WSIN!
+      msg = @msg
+      got_msg = @got_msg
+      client_id = @client_id
+      q = Queue.new
+
       loop do
-        EM.run {
-        ws = T.let(Faye::WebSocket::Client.new("ws://#{host}/websocket/back"), T.nilable(Faye::WebSocket::Client))
+        ws = WebSocket::Client::Simple.connect("ws://#{host}/websocket/back")
 
         ws&.on :open do |event|
-          LOGGER.debug("WSIN opend. send ack #{@client_id}")
-          ws.send(@client_id)
+          LOGGER.debug("WSIN opend. send ack #{client_id.inspect}")
+          ws.send(client_id)
         end
 
         ws&.on :message do |event|
           LOGGER.debug("WSIN msg #{event.data.inspect}")
           data = JSON.parse(event.data, symbolize_names: true)
-          if data[:status] == 200 then
-            @msg = data[:data]
-            @got_msg = true
-            ws.close()
+          status = T.let(data[:status].to_i, Integer)
+          msg, got_msg = if status == 200 then
+            tmp = T.let(data[:data].to_s, String)
+            # [msg, got_msg]
+            [tmp, true]
           else
-            @msg = ''
-            @got_msg = data[:status]
-            ws.close()
+            ['', status]
           end
+          q << got_msg
+          ws.close()
         end
 
         ws&.on :close do |event|
           LOGGER.debug("WSIN :close #{event.code} #{event.reason}")
-          if @got_msg then
+          if got_msg then
             ws = nil
             EM.stop
-            LOGGER.error("WSIN refused. already stdin opened?") if @got_msg == 403
+            LOGGER.error("WSIN refused. already stdin opened?") if got_msg == 403
           else
             LOGGER.warn("WSIN closed before msg. Retry after 10s")
             sleep 10
-            ws = Faye::WebSocket::Client.new("ws://#{host}/websocket/back")
           end
         end
-        }
-        break if @got_msg
-      end
+
+        q.pop # wait
+        break if got_msg
+      end # loop
+
+      @got_msg = got_msg
+      @msg     = msg
     }
   end
 

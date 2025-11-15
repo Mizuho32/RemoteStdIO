@@ -4,7 +4,6 @@ source "https://rubygems.org"
 
 gem 'sinatra'
 gem 'sinatra-contrib'
-gem 'faye-websocket'
 gem 'websocket-client-simple'
 gem 'puma'
 gem 'rackup'
