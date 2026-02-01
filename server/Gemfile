@@ -17,6 +17,10 @@ gem 'mongo'
 gem 'bigdecimal'
 gem 'multipart-post'
 
+group :server do
+  gem "faye-websocket"
+end
+
 group :backends do
   gem 'webrick'
   gem 'thin' 
@@ -33,7 +37,6 @@ group :develop do
   #gem 'rdoc'
   ##gem "google-apis-youtube_v3"
   #gem 'test-unit'
-  ##gem "faye-websocket"
   #gem "rake"
   #gem "ffi-rzmq"
   #gem "iruby"
