@@ -52,3 +52,9 @@ export default tseslint.config({
   },
 })
 ```
+
+## Dev URL
+Use _BACKEND_HOST_DBG_ for browser access.
+
+## Get IP
+ip -4 addr | grep -E 'inet.*enp' | awk '{print }' | cut -d/ -f1
