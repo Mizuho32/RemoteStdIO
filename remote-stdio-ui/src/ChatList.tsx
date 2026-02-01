@@ -11,6 +11,7 @@ import './ChatList.css'
 import type {AppState, Client, Message} from './interfaces'
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from 'rehype-raw'
 import asciidoctor from 'asciidoctor' // (1)
 
 export interface PrependState {
@@ -52,6 +53,7 @@ function ChatList(props: ChatListProps) {
   
   const message_format = props.client.message_format
   const markdown = message_format?.includes('a') ? false : true
+  const has_html = (text) => text.includes('<object')
   const Asciidoctor = markdown ? undefined : asciidoctor()
 
 
@@ -163,8 +165,11 @@ function ChatList(props: ChatListProps) {
                     <div key={index}>
                           <div className='msg' data-tooltip-id={`${client_id}-${index}`} data-tooltip-content={`${msg.datetime.toLocaleDateString()} ${msg.datetime.toLocaleTimeString()}`}>
                             {
-                              markdown ? 
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown> : 
+                              markdown ?
+                                ( has_html(msg.message) ?
+                                 /* FIXME: html mode selection UI */
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown> :
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message.replace(/\n/g, "  \n")}</ReactMarkdown>) :
                                 <div dangerouslySetInnerHTML={{ __html: Asciidoctor?.convert(msg.message.replace(/(?<!\n)\n(?!\n)/g, "  +\n"), {attributes: {showtitle: true}}) || '' }} />
                             }
                           </div>
